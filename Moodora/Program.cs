@@ -9,7 +9,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Data Source=moodora.db";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlServer(connectionString));
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
