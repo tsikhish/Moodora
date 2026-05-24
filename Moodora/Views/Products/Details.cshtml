@@ -1,0 +1,21 @@
+﻿@model Moodora.Models.Product
+@{
+    ViewData["Title"] = "Product Details";
+}
+<h1>@Model.Name</h1>
+@if (TempData["CartMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+<p>Mood: @Model.MoodCategory?.Name</p>
+<p>@Model.Description</p>
+<p>Price: <strong>$@Model.Price</strong></p>
+<p>Stock: @Model.Stock</p>
+<form asp-action="AddToCart" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-primary" @(Model.Stock <= 0 ? "disabled" : null)>Add to Cart</button>
+</form>
+@if (User.IsInRole("Admin"))
+{
+    <a class="btn btn-secondary mt-2" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+}
