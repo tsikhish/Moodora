@@ -1,0 +1,22 @@
+﻿@model Moodora.Models.Product
+@{
+    ViewData["Title"] = "Create Product";
+}
+<h1>Create Product</h1>
+<form asp-action="Create" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="col-md-6"><label asp-for="Name"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="MoodCategoryId"></label><select asp-for="MoodCategoryId" class="form-select" asp-items="ViewBag.MoodCategories"></select></div>
+    <div class="col-md-6"><label asp-for="Price"></label><input asp-for="Price" class="form-control" /><span asp-validation-for="Price" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="Stock"></label><input asp-for="Stock" class="form-control" /><span asp-validation-for="Stock" class="text-danger"></span></div>
+    <div class="col-md-12"><label asp-for="ImageUrl"></label><input asp-for="ImageUrl" class="form-control" /></div>
+    <div class="col-md-12"><label asp-for="Description"></label><textarea asp-for="Description" class="form-control"></textarea></div>
+    <div class="col-md-12 form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label"></label></div>
+    <div class="col-12"><button class="btn btn-primary">Create</button></div>
+</form>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

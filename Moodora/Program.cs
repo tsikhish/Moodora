@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moodora.Data;
 using Moodora.Models;
+using Moodora.Repositories;
+
+using Moodora.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Add services to the container.
+builder.Services.AddScoped<IMoodCategoryRepository, MoodCategoryRepository>();
+builder.Services.AddScoped<IMoodCategoryService, MoodCategoryService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
