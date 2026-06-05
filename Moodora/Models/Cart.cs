@@ -1,5 +1,6 @@
-﻿using Moodora.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Moodora.Models;
 
 public class Cart
 {
