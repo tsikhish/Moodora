@@ -6,10 +6,13 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0">Products</h1>
 
-    @if (User.IsInRole(ApplicationRoles.Admin))
-    {
-        <a class="btn btn-success" asp-action="Create">Create Product</a>
-    }
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">🛒 My Cart</a>
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            <a class="btn btn-success" asp-action="Create">Create Product</a>
+        }
+    </div>
 </div>
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-3"><input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search products" /></div>
@@ -35,6 +38,14 @@
     <div class="col-md-1 form-check mt-2"><input name="InStockOnly" value="true" checked="@Model.Query.InStockOnly" type="checkbox" class="form-check-input" /><label class="form-check-label">Stock</label></div>
     <div class="col-12"><button class="btn btn-primary">Filter</button></div>
 </form>
+@if (TempData["CartMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["CartError"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
 
 <div class="row row-cols-1 row-cols-md-3 g-3">
     @foreach (var p in Model.Result.Items)
@@ -47,7 +58,15 @@
                     <p>@p.Description</p>
                     <p><strong>$@p.Price</strong> · Stock: @p.Stock</p>
                     <p>@(p.IsActive ? "Active" : "Inactive")</p>
-                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@p.Id">Details</a>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@p.Id">Details</a>
+                        <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-1 align-items-center">
+                            <input type="hidden" name="productId" value="@p.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                            <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@p.Stock" name="quantity" value="1" aria-label="Quantity for @p.Name" />
+                            <button type="submit" class="btn btn-primary btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Add</button>
+                        </form>
+                    </div>
                     @if (User.IsInRole(ApplicationRoles.Admin))
                     {
                         <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Edit</a>

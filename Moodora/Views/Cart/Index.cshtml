@@ -1,0 +1,81 @@
+﻿@model IReadOnlyList<Moodora.Models.Cart>
+@{
+    ViewData["Title"] = "My Cart";
+    var cartTotal = Model.Sum(x => (x.Product?.Price ?? 0) * x.Quantity);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">My Cart</h1>
+    <a class="btn btn-outline-primary" asp-controller="Products" asp-action="Index">Continue Shopping</a>
+</div>
+
+@if (TempData["CartMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["CartError"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Your cart is empty. Choose products to add them here.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Mood</th>
+                    <th>Price</th>
+                    <th style="width: 180px;">Quantity</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var product = item.Product;
+                    if (product is null)
+                    {
+                        continue;
+                    }
+
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@product.Name</div>
+                            <div class="small text-muted">Stock: @product.Stock</div>
+                        </td>
+                        <td>@product.MoodCategory?.Name</td>
+                        <td>@product.Price.ToString("C")</td>
+                        <td>
+                            <form asp-action="Update" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input class="form-control form-control-sm" type="number" min="0" max="@product.Stock" name="quantity" value="@item.Quantity" aria-label="Quantity for @product.Name" />
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Update</button>
+                            </form>
+                        </td>
+                        <td>@((product.Price * item.Quantity).ToString("C"))</td>
+                        <td class="text-end">
+                            <form asp-action="Remove" method="post">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" class="text-end">Total</th>
+                    <th>@cartTotal.ToString("C")</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
