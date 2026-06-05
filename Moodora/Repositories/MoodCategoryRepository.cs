@@ -11,6 +11,8 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
     public Task<List<MoodCategory>> GetAllAsync()
     {
         return _context.MoodCategories
+            .Include(x => x.Products.Where(product => product.DeleteDate == null))
+            .Where(x => x.DeleteDate == null)
             .Include(x => x.Products)
             .OrderBy(x => x.Name)
             .ToListAsync();
@@ -19,8 +21,8 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
     public Task<MoodCategory?> GetByIdAsync(int id)
     {
         return _context.MoodCategories
-            .Include(x => x.Products)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .Include(x => x.Products.Where(product => product.DeleteDate == null))
+            .FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null);
     }
 
     public async Task AddAsync(MoodCategory moodCategory)
@@ -37,18 +39,18 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.MoodCategories.FindAsync(id);
+        var entity = await _context.MoodCategories.FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null);
         if (entity is null)
         {
             return;
         }
-
+        entity.DeleteDate = DateTime.UtcNow;
         _context.MoodCategories.Remove(entity);
         await _context.SaveChangesAsync();
     }
 
     public Task<bool> ExistsAsync(int id)
     {
-        return _context.MoodCategories.AnyAsync(x => x.Id == id);
+        return _context.MoodCategories.AnyAsync(x => x.Id == id && x.DeleteDate == null);
     }
 }

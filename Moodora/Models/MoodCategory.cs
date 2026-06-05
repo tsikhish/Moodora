@@ -23,6 +23,7 @@ public class MoodCategory
 
     [Display(Name = "Created On")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DeleteDate { get; set; }
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }
