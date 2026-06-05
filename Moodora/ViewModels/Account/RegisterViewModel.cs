@@ -5,6 +5,11 @@ namespace Moodora.ViewModels.Account
     public class RegisterViewModel
     {
         [Required]
+        [StringLength(30, ErrorMessage = "The {0} must be between {2} and {1} characters long.", MinimumLength = 3)]
+        [RegularExpression("^[a-zA-Z0-9._-]+$", ErrorMessage = "The username can only contain letters, numbers, dots, underscores, and hyphens.")]
+        [Display(Name = "Username")]
+        public string UserName { get; set; } = string.Empty;
+        [Required]
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;

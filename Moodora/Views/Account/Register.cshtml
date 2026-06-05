@@ -11,7 +11,13 @@
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 
             <div class="form-floating mb-3">
-                <input asp-for="Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                <input asp-for="UserName" class="form-control" autocomplete="username" placeholder="Username" />
+                <label asp-for="UserName"></label>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Email" class="form-control" autocomplete="email" placeholder="name@example.com" />
                 <label asp-for="Email"></label>
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>

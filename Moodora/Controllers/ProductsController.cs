@@ -7,18 +7,17 @@ using Moodora.ViewModels.Products;
 
 namespace Moodora.Controllers;
 
+[Authorize]
 public class ProductsController(IProductService productService) : Controller
 {
     private readonly IProductService _productService = productService;
 
-    [AllowAnonymous]
     public async Task<IActionResult> Index([FromQuery] ProductQueryParameters query)
     {
         var viewModel = await _productService.GetCatalogAsync(query);
         return View(viewModel);
     }
 
-    [AllowAnonymous]
     public async Task<IActionResult> ByMoodCategory(int id, [FromQuery] ProductQueryParameters query)
     {
         query.MoodCategoryId = id;
@@ -26,7 +25,6 @@ public class ProductsController(IProductService productService) : Controller
         return View("Index", viewModel);
     }
 
-    [AllowAnonymous]
     public async Task<IActionResult> Details(int id)
     {
         var product = await _productService.GetByIdAsync(id);
@@ -36,7 +34,6 @@ public class ProductsController(IProductService productService) : Controller
     }
 
     [HttpPost]
-    [AllowAnonymous]
     [ValidateAntiForgeryToken]
     public IActionResult AddToCart(int id)
     {

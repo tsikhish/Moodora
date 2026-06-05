@@ -41,7 +41,7 @@ public class AccountController(
 
         var user = new ApplicationUser
         {
-            UserName = model.Email,
+            UserName = model.UserName,
             Email = model.Email,
             EmailConfirmed = true
         };
@@ -87,8 +87,15 @@ public class AccountController(
             return View(model);
         }
 
+        var user = await userManager.FindByEmailAsync(model.Email);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
+        }
+
         var result = await signInManager.PasswordSignInAsync(
-            model.Email,
+            user,
             model.Password,
             model.RememberMe,
             lockoutOnFailure: false);
@@ -116,7 +123,7 @@ public class AccountController(
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
-        return RedirectToAction(nameof(HomeController.Index), "Home");
+        return RedirectToAction(nameof(ProductsController.Index), "Products");
     }
 
     private IActionResult RedirectToLocal(string? returnUrl)
@@ -126,6 +133,6 @@ public class AccountController(
             return Redirect(returnUrl);
         }
 
-        return RedirectToAction(nameof(HomeController.Index), "Home");
+        return RedirectToAction(nameof(ProductsController.Index), "Products");
     }
 }
