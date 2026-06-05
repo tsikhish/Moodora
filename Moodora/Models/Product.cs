@@ -27,7 +27,7 @@ public class Product
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }
-
+    public DateTime? DeleteDate { get; set; }
     [Display(Name = "Mood Category")]
     public int MoodCategoryId { get; set; }
 

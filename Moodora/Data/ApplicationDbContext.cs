@@ -21,6 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(x => x.ImageUrl).HasMaxLength(1000);
             entity.Property(x => x.IsActive).HasDefaultValue(true);
             entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(x => x.DeleteDate);
         });
 
         builder.Entity<Product>(entity =>
