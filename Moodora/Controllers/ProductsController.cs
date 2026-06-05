@@ -33,14 +33,6 @@ public class ProductsController(IProductService productService) : Controller
         return View(product);
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult AddToCart(int id)
-    {
-        TempData["CartMessage"] = $"Product {id} added to cart.";
-        return RedirectToAction(nameof(Details), new { id });
-    }
-
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Create()
     {

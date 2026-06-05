@@ -11,9 +11,19 @@
 <p>@Model.Description</p>
 <p>Price: <strong>$@Model.Price</strong></p>
 <p>Stock: @Model.Stock</p>
-<form asp-action="AddToCart" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
+@if (TempData["CartError"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+<form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 align-items-end mb-2">
+    <input type="hidden" name="productId" value="@Model.Id" />
+    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+    <div>
+        <label class="form-label" for="quantity">Quantity</label>
+        <input class="form-control" id="quantity" type="number" min="1" max="@Model.Stock" name="quantity" value="1" />
+    </div>
     <button type="submit" class="btn btn-primary" @(Model.Stock <= 0 ? "disabled" : null)>Add to Cart</button>
+    <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">View Cart</a>
 </form>
 @if (User.IsInRole("Admin"))
 {

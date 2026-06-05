@@ -8,6 +8,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<MoodCategory> MoodCategories => Set<MoodCategory>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Cart> Carts => Set<Cart>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,6 +36,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(x => x.Products)
                 .HasForeignKey(x => x.MoodCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<Cart>(entity =>
+        {
+            entity.Property(x => x.UserId).IsRequired();
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasIndex(x => new { x.UserId, x.ProductId }).IsUnique();
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
