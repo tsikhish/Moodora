@@ -3,8 +3,14 @@
     ViewData["Title"] = "Products";
 }
 
-<h1 class="mb-3">Products</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Products</h1>
 
+    @if (User.IsInRole(ApplicationRoles.Admin))
+    {
+        <a class="btn btn-success" asp-action="Create">Create Product</a>
+    }
+</div>
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-3"><input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search products" /></div>
     <div class="col-md-2">
@@ -42,9 +48,10 @@
                     <p><strong>$@p.Price</strong> · Stock: @p.Stock</p>
                     <p>@(p.IsActive ? "Active" : "Inactive")</p>
                     <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@p.Id">Details</a>
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole(ApplicationRoles.Admin))
                     {
                         <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Edit</a>
+                        <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@p.Id">Delete</a>
                     }
                 </div>
             </div>

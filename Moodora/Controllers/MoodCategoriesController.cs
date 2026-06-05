@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Moodora.Models;
 using Moodora.Services;
 
 namespace Moodora.Controllers;
 
+[Authorize]
 public class MoodCategoriesController(IMoodCategoryService service) : Controller
 {
     private readonly IMoodCategoryService _service = service;
@@ -29,10 +31,12 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
 
         return View(moodCategory);
     }
-
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public IActionResult Create() => View();
 
+
     [HttpPost]
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Name,Description,ImageUrl,IsActive")] MoodCategory moodCategory)
     {
@@ -44,7 +48,7 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
         await _service.CreateAsync(moodCategory);
         return RedirectToAction(nameof(Index));
     }
-
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id is null)
@@ -62,6 +66,7 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,ImageUrl,IsActive,CreatedAt")] MoodCategory moodCategory)
     {
@@ -83,7 +88,7 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
 
         return RedirectToAction(nameof(Index));
     }
-
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id is null)
@@ -101,6 +106,7 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
     }
 
     [HttpPost, ActionName("Delete")]
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
