@@ -11,7 +11,10 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
 
     public async Task<PagedResult<Product>> GetPagedAsync(ProductQueryParameters query)
     {
-        var items = _context.Products.Include(x => x.MoodCategory).AsQueryable();
+        var items = _context.Products
+                    .Include(x => x.MoodCategory)
+                    .Where(x => x.DeleteDate == null && x.MoodCategory != null && x.MoodCategory.DeleteDate == null)
+                    .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -55,8 +58,12 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
         };
     }
 
-    public Task<Product?> GetByIdAsync(int id) => _context.Products.Include(x => x.MoodCategory).FirstOrDefaultAsync(x => x.Id == id);
-
+    public Task<Product?> GetByIdAsync(int id)
+    {
+        return _context.Products
+            .Include(x => x.MoodCategory)
+            .FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null && x.MoodCategory != null && x.MoodCategory.DeleteDate == null);
+    }
     public async Task AddAsync(Product product)
     {
         _context.Products.Add(product);
@@ -71,10 +78,11 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
 
     public async Task DeleteAsync(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null);
         if (product is null) return;
 
-        _context.Products.Remove(product);
+        product.DeleteDate = DateTime.UtcNow;
+        product.UpdatedAt = product.DeleteDate;
         await _context.SaveChangesAsync();
     }
 }
