@@ -67,7 +67,6 @@
                             <button type="submit" class="btn btn-primary btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Add</button>
                         </form>
                     </div>
-                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@p.Id">Details</a>
                     @if (User.IsInRole(ApplicationRoles.Admin))
                     {
                         <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Edit</a>

@@ -18,7 +18,7 @@ public class CartController(ApplicationDbContext context) : Controller
         var cartItems = await _context.Carts
             .Include(x => x.Product)
                 .ThenInclude(x => x!.MoodCategory)
-            .Where(x => x.UserId == userId && x.Product != null && x.Product.DeleteDate == null)
+            .Where(x => x.UserId == userId && x.Product != null && x.Product.DeleteDate == null && x.DeletedDate == null)
             .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
             .ToListAsync();
 
@@ -97,7 +97,8 @@ public class CartController(ApplicationDbContext context) : Controller
 
         if (quantity < 1)
         {
-            _context.Carts.Remove(cartItem);
+            cartItem.DeletedDate = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
             TempData["CartMessage"] = "Item removed from your cart.";
         }
         else
@@ -105,7 +106,8 @@ public class CartController(ApplicationDbContext context) : Controller
             var stock = cartItem.Product?.Stock ?? 0;
             if (stock <= 0)
             {
-                _context.Carts.Remove(cartItem);
+                cartItem.DeletedDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
                 TempData["CartMessage"] = "Item removed because it is no longer in stock.";
             }
             else
@@ -134,7 +136,7 @@ public class CartController(ApplicationDbContext context) : Controller
             return NotFound();
         }
 
-        _context.Carts.Remove(cartItem);
+        cartItem.DeletedDate = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         TempData["CartMessage"] = "Item removed from your cart.";
 

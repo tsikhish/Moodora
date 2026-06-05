@@ -16,6 +16,7 @@ public class Cart
     public int Quantity { get; set; } = 1;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DeletedDate { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
 
