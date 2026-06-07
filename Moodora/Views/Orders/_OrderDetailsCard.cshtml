@@ -1,0 +1,64 @@
+﻿@model Moodora.Models.Order
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card order-card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                        <h2 class="h4 mb-1">Products</h2>
+                        <p class="text-muted mb-0">Snapshot saved from the moment of purchase.</p>
+                    </div>
+                    <span class="badge status-badge status-@Model.Status.ToString().ToLowerInvariant()">@Model.Status</span>
+                </div>
+                <div class="order-summary-list">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="order-summary-item">
+                            <img src="@(string.IsNullOrWhiteSpace(item.ProductImage) ? "https://placehold.co/96x96?text=Moodora" : item.ProductImage)" alt="@item.ProductName" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">@item.ProductName</div>
+                                <div class="small text-muted">Product #@item.ProductId • @item.Quantity × @item.UnitPrice.ToString("C")</div>
+                            </div>
+                            <strong>@item.LineTotal.ToString("C")</strong>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex justify-content-between border-top pt-3 mt-3 fs-5">
+                    <span>Total paid</span>
+                    <strong>@Model.TotalAmount.ToString("C")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card order-card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">Customer</h2>
+                <dl class="mb-0 order-meta">
+                    <dt>Name</dt>
+                    <dd>@Model.FullName</dd>
+                    <dt>Email</dt>
+                    <dd>@Model.Email</dd>
+                    <dt>Phone</dt>
+                    <dd>@Model.PhoneNumber</dd>
+                    <dt>Payment</dt>
+                    <dd>@Model.PaymentMethod</dd>
+                    <dt>Created</dt>
+                    <dd>@Model.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="card order-card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-3">Delivery</h2>
+                <p class="fw-semibold mb-1">@Model.City</p>
+                <p class="mb-3">@Model.Address</p>
+                @if (!string.IsNullOrWhiteSpace(Model.AdditionalComment))
+                {
+                    <div class="order-note">@Model.AdditionalComment</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

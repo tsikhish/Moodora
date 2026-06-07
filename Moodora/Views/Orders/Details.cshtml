@@ -1,0 +1,14 @@
+﻿@model Moodora.Models.Order
+@{
+    ViewData["Title"] = $"Order {Model.OrderNumber}";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <p class="text-uppercase text-muted fw-semibold mb-1">Order details</p>
+        <h1 class="mb-0">@Model.OrderNumber</h1>
+    </div>
+    <a class="btn btn-outline-primary" asp-action="History">Back to History</a>
+</div>
+
+@await Html.PartialAsync("_OrderDetailsCard", Model)

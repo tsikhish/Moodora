@@ -1,0 +1,15 @@
+﻿@model Moodora.Models.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="order-success text-center p-5 mb-4">
+    <div class="order-success-icon">✓</div>
+    <h1 class="display-6">Order confirmed</h1>
+    <p class="lead mb-1">Your order <strong>@Model.OrderNumber</strong> was created successfully.</p>
+    <p class="text-muted mb-4">We saved your product names and prices exactly as they were at checkout.</p>
+    <a class="btn btn-primary" asp-action="Details" asp-route-id="@Model.Id">View Order Details</a>
+    <a class="btn btn-outline-secondary" asp-action="History">Order History</a>
+</div>
+
+@await Html.PartialAsync("_OrderDetailsCard", Model)

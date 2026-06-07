@@ -1,0 +1,37 @@
+﻿@model Moodora.Models.Order
+@{
+    ViewData["Title"] = $"Manage {Model.OrderNumber}";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <p class="text-uppercase text-muted fw-semibold mb-1">Admin order</p>
+        <h1 class="mb-0">@Model.OrderNumber</h1>
+    </div>
+    <a class="btn btn-outline-primary" asp-action="Admin">All Orders</a>
+</div>
+
+@if (TempData["AdminOrderMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="card order-card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <form asp-action="UpdateStatus" method="post" class="row g-3 align-items-end">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <div class="col-md-6">
+                <label class="form-label" for="status">Order status</label>
+                <select id="status" name="status" asp-items="ViewBag.Statuses" class="form-select"></select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Update Status</button>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <span class="badge status-badge status-@Model.Status.ToString().ToLowerInvariant()">Current: @Model.Status</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+@await Html.PartialAsync("_OrderDetailsCard", Model)
