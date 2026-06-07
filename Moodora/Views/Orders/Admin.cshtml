@@ -1,0 +1,60 @@
+﻿@model IReadOnlyList<Moodora.Models.Order>
+@{
+    ViewData["Title"] = "Admin Orders";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <p class="text-uppercase text-muted fw-semibold mb-1">Admin</p>
+        <h1 class="mb-0">Order Management</h1>
+    </div>
+    <span class="badge bg-dark fs-6">@Model.Count order(s)</span>
+</div>
+
+@if (TempData["AdminOrderMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No orders have been placed yet.</div>
+}
+else
+{
+    <div class="card order-card shadow-sm">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Delivery</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@order.OrderNumber</div>
+                                <div class="small text-muted">@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</div>
+                            </td>
+                            <td>
+                                <div>@order.FullName</div>
+                                <div class="small text-muted">@order.Email</div>
+                            </td>
+                            <td>@order.City</td>
+                            <td><span class="badge status-badge status-@order.Status.ToString().ToLowerInvariant()">@order.Status</span></td>
+                            <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
+                            <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-action="AdminDetails" asp-route-id="@order.Id">Manage</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -9,6 +9,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MoodCategory> MoodCategories => Set<MoodCategory>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Cart> Carts => Set<Cart>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -38,6 +40,46 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasForeignKey(x => x.MoodCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+        builder.Entity<Order>(entity =>
+        {
+            entity.Property(x => x.OrderNumber).HasMaxLength(32).IsRequired();
+            entity.HasIndex(x => x.OrderNumber).IsUnique();
+            entity.Property(x => x.UserId).IsRequired();
+            entity.Property(x => x.FullName).HasMaxLength(150).IsRequired();
+            entity.Property(x => x.Email).HasMaxLength(256).IsRequired();
+            entity.Property(x => x.PhoneNumber).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.City).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Address).HasMaxLength(500).IsRequired();
+            entity.Property(x => x.AdditionalComment).HasMaxLength(1000);
+            entity.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.PaymentMethod).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<OrderItem>(entity =>
+        {
+            entity.Property(x => x.ProductName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.ProductImage).HasMaxLength(1000);
+            entity.Property(x => x.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.LineTotal).HasColumnType("decimal(18,2)");
+
+            entity.HasOne(x => x.Order)
+                .WithMany(x => x.Items)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         builder.Entity<Cart>(entity =>
         {
             entity.Property(x => x.UserId).IsRequired();

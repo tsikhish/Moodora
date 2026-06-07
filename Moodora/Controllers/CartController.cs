@@ -67,8 +67,12 @@ public class CartController(ApplicationDbContext context) : Controller
         }
         else
         {
-            requestedQuantity += cartItem.Quantity;
+            if (cartItem.DeletedDate is null)
+            {
+                requestedQuantity += cartItem.Quantity;
+            }
             cartItem.Quantity = Math.Min(requestedQuantity, product.Stock);
+            cartItem.DeletedDate = null;
             cartItem.UpdatedAt = DateTime.UtcNow;
         }
 

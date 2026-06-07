@@ -1,0 +1,100 @@
+﻿@model Moodora.ViewModels.Orders.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="order-hero mb-4">
+    <div>
+        <p class="text-uppercase text-muted fw-semibold mb-1">Secure checkout</p>
+        <h1 class="display-6 mb-2">Complete your mood-powered order</h1>
+        <p class="mb-0 text-muted">Review your cart, add delivery details, and place your order.</p>
+    </div>
+    <div class="order-hero-total">
+        <span>Total</span>
+        <strong>@Model.TotalAmount.ToString("C")</strong>
+    </div>
+</div>
+
+<form asp-action="Checkout" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card order-card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Delivery information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label"></label>
+                            <input asp-for="City" class="form-control" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label"></label>
+                            <input asp-for="Address" class="form-control" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="AdditionalComment" class="form-label"></label>
+                            <textarea asp-for="AdditionalComment" class="form-control" rows="4" placeholder="Delivery notes, preferred time, or gift message"></textarea>
+                            <span asp-validation-for="AdditionalComment" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="PaymentMethod" class="form-label"></label>
+                            <select asp-for="PaymentMethod" asp-items="ViewBag.PaymentMethods" class="form-select"></select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card order-card shadow-sm sticky-lg-top order-summary-card">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Order summary</h2>
+                    <div class="order-summary-list">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            var product = item.Product;
+                            if (product is null) { continue; }
+                            <div class="order-summary-item">
+                                <img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "https://placehold.co/96x96?text=Moodora" : product.ImageUrl)" alt="@product.Name" />
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">@product.Name</div>
+                                    <div class="small text-muted">@item.Quantity × @product.Price.ToString("C")</div>
+                                </div>
+                                <strong>@((product.Price * item.Quantity).ToString("C"))</strong>
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-3 mt-3 fs-5">
+                        <span>Total</span>
+                        <strong>@Model.TotalAmount.ToString("C")</strong>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Confirm Order</button>
+                    <a class="btn btn-outline-secondary w-100 mt-2" asp-controller="Cart" asp-action="Index">Back to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
