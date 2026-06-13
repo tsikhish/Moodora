@@ -1,4 +1,5 @@
 ﻿@model Moodora.Models.Order
+@using Moodora.Models
 
 <div class="row g-4">
     <div class="col-lg-8">
@@ -44,6 +45,24 @@
                     <dd>@Model.PhoneNumber</dd>
                     <dt>Payment</dt>
                     <dd>@Model.PaymentMethod</dd>
+                    @if (Model.Payments.Any())
+                    {
+                        var latestPayment = Model.Payments.OrderByDescending(x => x.CreatedAt).First();
+                        <dt>Payment status</dt>
+                        <dd><span class="badge payment-status-badge payment-status-@latestPayment.Status.ToString().ToLowerInvariant()">@latestPayment.Status</span></dd>
+                        <dt>Transaction</dt>
+                        <dd>@latestPayment.TransactionId</dd>
+                        @if (!string.IsNullOrWhiteSpace(latestPayment.CardLastFourDigits))
+                        {
+                            <dt>Card</dt>
+                            <dd>•••• @latestPayment.CardLastFourDigits</dd>
+                        }
+                    }
+                    else if (Model.PaymentMethod == "Demo Payment")
+                    {
+                        <dt>Payment status</dt>
+                        <dd><a class="btn btn-sm btn-primary" asp-controller="Payments" asp-action="Pay" asp-route-orderId="@Model.Id">Pay now</a></dd>
+                    }
                     <dt>Created</dt>
                     <dd>@Model.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</dd>
                 </dl>
