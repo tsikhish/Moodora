@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -79,7 +80,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+        builder.Entity<Payment>(entity =>
+        {
+            entity.Property(x => x.UserId).IsRequired();
+            entity.Property(x => x.Amount).HasColumnType("decimal(18,2)");
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.TransactionId).HasMaxLength(40).IsRequired();
+            entity.HasIndex(x => x.TransactionId).IsUnique();
+            entity.Property(x => x.CardLastFourDigits).HasMaxLength(4);
+            entity.Property(x => x.CardBrand).HasMaxLength(80);
+            entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
+            entity.HasOne(x => x.Order)
+                .WithMany(x => x.Payments)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         builder.Entity<Cart>(entity =>
         {
             entity.Property(x => x.UserId).IsRequired();

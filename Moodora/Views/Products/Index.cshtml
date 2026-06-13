@@ -66,6 +66,12 @@
                             <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@p.Stock" name="quantity" value="1" aria-label="Quantity for @p.Name" />
                             <button type="submit" class="btn btn-primary btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Add</button>
                         </form>
+                        <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                            <input type="hidden" name="productId" value="@p.Id" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
+                            <button type="submit" class="btn btn-success btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Buy</button>
+                        </form>
                     </div>
                     @if (User.IsInRole(ApplicationRoles.Admin))
                     {

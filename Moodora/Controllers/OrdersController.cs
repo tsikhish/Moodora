@@ -64,6 +64,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
             return View(viewModel);
         }
 
+        var isDemoPayment = string.Equals(viewModel.PaymentMethod, "Demo Payment", StringComparison.OrdinalIgnoreCase);
         await using var transaction = await _context.Database.BeginTransactionAsync();
         var order = new Order
         {
@@ -94,15 +95,25 @@ public class OrdersController(ApplicationDbContext context) : Controller
                 Quantity = cartItem.Quantity,
                 LineTotal = lineTotal
             });
-            product.Stock -= cartItem.Quantity;
+            if (!isDemoPayment)
+            {
+                product.Stock -= cartItem.Quantity;
+            }
         }
 
         _context.Orders.Add(order);
-        _context.Carts.RemoveRange(cartItems);
+        if (!isDemoPayment)
+        {
+            _context.Carts.RemoveRange(cartItems);
+        }
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
 
         TempData["OrderMessage"] = $"Thank you! Order {order.OrderNumber} has been created.";
+        if (isDemoPayment)
+        {
+            return RedirectToAction("Pay", "Payments", new { orderId = order.Id });
+        }
         return RedirectToAction(nameof(Confirmation), new { id = order.Id });
     }
 
@@ -122,6 +133,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         var userId = GetCurrentUserId();
         var orders = await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
@@ -145,6 +157,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
     {
         var orders = await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .Include(x => x.User)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
@@ -157,6 +170,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
     {
         var order = await _context.Orders
             .Include(x => x.Items)
+             .Include(x => x.Payments)
             .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -210,6 +224,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         var userId = GetCurrentUserId();
         return await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
     }
 

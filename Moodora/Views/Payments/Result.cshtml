@@ -1,0 +1,49 @@
+﻿@model Moodora.ViewModels.Payments.PaymentResultViewModel
+@using Moodora.Models
+@{
+    var successful = Model.Status == PaymentStatus.Successful;
+    ViewData["Title"] = successful ? "Payment Successful" : "Payment Failed";
+}
+
+<div class="payment-result @(successful ? "payment-result-success" : "payment-result-failed") text-center p-5 mb-4">
+    <div class="payment-result-icon">@(successful ? "✓" : "!")</div>
+    <p class="payment-eyebrow mb-2">Demo checkout</p>
+    <h1 class="display-6">@(successful ? "Payment Successful" : "Payment Failed")</h1>
+    <p class="lead mb-1">Order <strong>@Model.OrderNumber</strong> · @Model.Amount.ToString("C")</p>
+    <p class="text-muted mb-3">Transaction ID: <strong>@Model.TransactionId</strong></p>
+    @if (!string.IsNullOrWhiteSpace(Model.CardLastFourDigits))
+    {
+        <p class="small text-muted">Card ending in @Model.CardLastFourDigits</p>
+    }
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+        @if (successful)
+        {
+            <a class="btn btn-primary" asp-controller="Orders" asp-action="Details" asp-route-id="@Model.OrderId">View Order Details</a>
+            <a class="btn btn-outline-secondary" asp-controller="Orders" asp-action="History">Order History</a>
+        }
+        else
+        {
+            <a class="btn btn-primary" asp-action="Pay" asp-route-orderId="@Model.OrderId">Try Again</a>
+            <a class="btn btn-outline-secondary" asp-controller="Orders" asp-action="Details" asp-route-id="@Model.OrderId">Back to Order</a>
+        }
+    </div>
+</div>
+
+<div class="card order-card shadow-sm">
+    <div class="card-body p-4">
+        <h2 class="h4 mb-3">Purchased products</h2>
+        <div class="order-summary-list">
+            @foreach (var item in Model.Items)
+            {
+                <div class="order-summary-item">
+                    <img src="@(string.IsNullOrWhiteSpace(item.ProductImage) ? "https://placehold.co/96x96?text=Moodora" : item.ProductImage)" alt="@item.ProductName" />
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">@item.ProductName</div>
+                        <div class="small text-muted">@item.Quantity × @item.UnitPrice.ToString("C")</div>
+                    </div>
+                    <strong>@item.LineTotal.ToString("C")</strong>
+                </div>
+            }
+        </div>
+    </div>
+</div>
