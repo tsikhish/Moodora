@@ -54,7 +54,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5>@p.Name</h5>
-                    <p class="small text-muted">@(p.MoodCategory?.Name)</p>
+                    <p class="small text-muted">@string.Join(", ", p.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</p>
                     <p>@p.Description</p>
                     <p><strong>$@p.Price</strong> · Stock: @p.Stock</p>
                     <p>@(p.IsActive ? "Active" : "Inactive")</p>

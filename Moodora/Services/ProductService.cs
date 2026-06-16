@@ -28,6 +28,7 @@ public class ProductService(IProductRepository productRepository, IMoodCategoryR
     {
         product.CreatedAt = DateTime.UtcNow;
         product.UpdatedAt = DateTime.UtcNow;
+        product.SelectedMoodCategoryIds = product.SelectedMoodCategoryIds.Distinct().ToList();
         if (product.Stock < 0) product.Stock = 0;
         await _productRepository.AddAsync(product);
     }
@@ -35,6 +36,7 @@ public class ProductService(IProductRepository productRepository, IMoodCategoryR
     public async Task UpdateAsync(Product product)
     {
         product.UpdatedAt = DateTime.UtcNow;
+        product.SelectedMoodCategoryIds = product.SelectedMoodCategoryIds.Distinct().ToList();
         if (product.Stock < 0) product.Stock = 0;
         await _productRepository.UpdateAsync(product);
     }

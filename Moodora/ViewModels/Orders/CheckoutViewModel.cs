@@ -20,6 +20,10 @@ public class CheckoutViewModel
     [StringLength(40)]
     [Display(Name = "Phone number")]
     public string PhoneNumber { get; set; } = string.Empty;
+    [Required]
+    [StringLength(2)]
+    [Display(Name = "Country")]
+    public string CountryCode { get; set; } = "US";
 
     [Required]
     [StringLength(120)]

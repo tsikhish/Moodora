@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Moodora.Models;
 
@@ -28,8 +29,9 @@ public class Product
 
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeleteDate { get; set; }
-    [Display(Name = "Mood Category")]
-    public int MoodCategoryId { get; set; }
+    [NotMapped]
+    [Display(Name = "Mood Categories")]
+    public List<int> SelectedMoodCategoryIds { get; set; } = new();
 
-    public MoodCategory? MoodCategory { get; set; }
+    public ICollection<ProductMoodCategory> ProductMoodCategories { get; set; } = new List<ProductMoodCategory>();
 }
