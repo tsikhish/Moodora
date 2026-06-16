@@ -7,7 +7,7 @@
 {
     <div class="alert alert-success">@message</div>
 }
-<p>Mood: @Model.MoodCategory?.Name</p>
+<p>Mood: @string.Join(", ", Model.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</p>
 <p>@Model.Description</p>
 <p>Price: <strong>$@Model.Price</strong></p>
 <p>Stock: @Model.Stock</p>

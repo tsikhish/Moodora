@@ -34,8 +34,14 @@
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
+                            <label asp-for="CountryCode" class="form-label"></label>
+                            <select asp-for="CountryCode" asp-items="ViewBag.Countries" class="form-select"></select>
+                            <span asp-validation-for="CountryCode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
                             <label asp-for="PhoneNumber" class="form-label"></label>
-                            <input asp-for="PhoneNumber" class="form-control" />
+
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Use local or international format" />
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">

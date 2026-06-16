@@ -12,6 +12,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<ProductMoodCategory> ProductMoodCategories => Set<ProductMoodCategory>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,11 +36,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(x => x.ImageUrl).HasMaxLength(1000);
             entity.Property(x => x.IsActive).HasDefaultValue(true);
             entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Ignore(x => x.SelectedMoodCategoryIds);
+        });
+        builder.Entity<ProductMoodCategory>(entity =>
+        {
+            entity.HasKey(x => new { x.ProductId, x.MoodCategoryId });
+
+            entity.HasOne(x => x.Product)
+                .WithMany(x => x.ProductMoodCategories)
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(x => x.MoodCategory)
-                .WithMany(x => x.Products)
+                 .WithMany(x => x.ProductMoodCategories)
                 .HasForeignKey(x => x.MoodCategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         });
         builder.Entity<Order>(entity =>
         {
@@ -49,6 +60,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(x => x.FullName).HasMaxLength(150).IsRequired();
             entity.Property(x => x.Email).HasMaxLength(256).IsRequired();
             entity.Property(x => x.PhoneNumber).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.CountryCode).HasMaxLength(2).IsRequired();
             entity.Property(x => x.City).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Address).HasMaxLength(500).IsRequired();
             entity.Property(x => x.AdditionalComment).HasMaxLength(1000);

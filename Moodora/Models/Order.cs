@@ -26,6 +26,9 @@ public class Order
     [Phone]
     [StringLength(40)]
     public string PhoneNumber { get; set; } = string.Empty;
+    [Required]
+    [StringLength(2)]
+    public string CountryCode { get; set; } = "US";
 
     [Required]
     [StringLength(120)]
