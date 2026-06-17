@@ -31,5 +31,5 @@ public class Product
     [Display(Name = "Mood Category")]
     public int MoodCategoryId { get; set; }
 
-    public MoodCategory? MoodCategory { get; set; }
+    public ICollection<ProductMoodCategory> ProductMoodCategories { get; set; } = new List<ProductMoodCategory>();
 }

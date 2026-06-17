@@ -26,4 +26,6 @@ public class MoodCategory
     public DateTime? DeleteDate { get; set; }
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
+
+
 }
