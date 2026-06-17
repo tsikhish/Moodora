@@ -15,11 +15,15 @@ public class CartController(ApplicationDbContext context) : Controller
     public async Task<IActionResult> Index()
     {
         var userId = GetCurrentUserId();
+
         var cartItems = await _context.Carts
             .Include(x => x.Product)
                 .ThenInclude(x => x!.ProductMoodCategories)
                     .ThenInclude(x => x.MoodCategory)
-            .Where(x => x.UserId == userId && x.Product != null && x.Product.DeleteDate == null && x.DeletedDate == null)
+            .Where(x => x.UserId == userId
+                && x.Product != null
+                && x.Product.DeleteDate == null
+                && x.DeletedDate == null)
             .OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt)
             .ToListAsync();
 

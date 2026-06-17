@@ -1,42 +1,49 @@
 ﻿@model Moodora.Models.MoodCategory
 
 @{
-    ViewData["Title"] = "Mood Category Details";
+    ViewData["Title"] = Model.Name;
 }
 
-<h1>Mood Category Details</h1>
+<section class="detail-grid">
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Name)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.Name)</dd>
+    <img class="product-detail-image"
+         src="@(string.IsNullOrWhiteSpace(Model.ImageUrl)
+                         ? "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1000&q=80"
+                         : Model.ImageUrl)"
+         alt="@Model.Name" />
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Description)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.Description)</dd>
+    <div class="m-card detail-panel">
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ImageUrl)</dt>
-        <dd class="col-sm-10">
-            @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-            {
-                <a href="@Model.ImageUrl" target="_blank" rel="noopener noreferrer">@Model.ImageUrl</a>
-            }
-        </dd>
+        <p class="eyebrow">Mood collection</p>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.IsActive)</dt>
-        <dd class="col-sm-10">@Html.DisplayFor(model => model.IsActive)</dd>
+        <h1>@Model.Name</h1>
+
+        <p class="lead">@Model.Description</p>
+
+        <p>
+            <strong>@Model.ProductMoodCategories.Count</strong> linked products ·
+            @(Model.IsActive ? "Active" : "Paused")
+        </p>
 
         <dt class="col-sm-2">Products</dt>
         <dd class="col-sm-10">@Model.ProductMoodCategories.Count</dd>
 
-        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
-        <dd class="col-sm-10">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</dd>
-    </dl>
-</div>
-<div>
-    @if (User.IsInRole(ApplicationRoles.Admin))
-    {
-        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a>
-    }
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-</div>
+            @if (User.IsInRole(ApplicationRoles.Admin))
+            {
+                <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="m-btn text-decoration-none">
+                    Edit
+                </a>
+            }
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back
+            </a>
+
+        </div>
+
+    </div>
+
+</section>

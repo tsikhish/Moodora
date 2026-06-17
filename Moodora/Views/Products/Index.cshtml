@@ -1,53 +1,157 @@
 ﻿@model Moodora.ViewModels.Products.ProductListViewModel
+
 @{
     ViewData["Title"] = "Products";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="mb-0">Products</h1>
+<section class="shelf-head">
 
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">🛒 My Cart</a>
-        @if (User.IsInRole(ApplicationRoles.Admin))
-        {
-            <a class="btn btn-success" asp-action="Create">Create Product</a>
-        }
-    </div>
-</div>
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3"><input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search products" /></div>
-    <div class="col-md-2">
-        <select name="MoodCategoryId" class="form-select">
-            <option value="">All moods</option>
-            @foreach (var c in Model.MoodCategories)
+    <p class="eyebrow">The mood shelf</p>
+
+    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-end">
+
+        <div>
+            <h1>Choose a feeling,<br />see your shelf</h1>
+            <p class="lead">
+                Tap a mood below. The shop rearranges itself around how you want to feel.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-primary"
+               asp-controller="Cart"
+               asp-action="Index">
+                🛒 My Cart
+            </a>
+
+            @if (User.IsInRole(ApplicationRoles.Admin))
             {
-                <option value="@c.Id" selected="@(Model.Query.MoodCategoryId == c.Id)">@c.Name</option>
+                <a class="m-btn text-decoration-none"
+                   asp-action="Create">
+                    Create Product
+                </a>
             }
-        </select>
+        </div>
+
     </div>
-    <div class="col-md-2"><input type="number" step="0.01" name="MinPrice" value="@Model.Query.MinPrice" class="form-control" placeholder="Min price" /></div>
-    <div class="col-md-2"><input type="number" step="0.01" name="MaxPrice" value="@Model.Query.MaxPrice" class="form-control" placeholder="Max price" /></div>
-    <div class="col-md-2">
-        <select name="SortBy" class="form-select">
-            <option value="created_desc">Newest</option>
-            <option value="created_asc" selected="@(Model.Query.SortBy == "created_asc")">Oldest</option>
-            <option value="price_asc" selected="@(Model.Query.SortBy == "price_asc")">Price low-high</option>
-            <option value="price_desc" selected="@(Model.Query.SortBy == "price_desc")">Price high-low</option>
-        </select>
+
+    <div class="pill-row mt-4">
+
+        <a class="pill @(Model.Query.MoodCategoryId == null ? "active" : "")"
+           asp-action="Index">
+            All
+        </a>
+
+        @foreach (var c in Model.MoodCategories)
+        {
+            <a class="pill @(Model.Query.MoodCategoryId == c.Id ? "active" : "")"
+               asp-action="Index"
+               asp-route-MoodCategoryId="@c.Id">
+                @c.Name
+            </a>
+        }
+
     </div>
-    <div class="col-md-1 form-check mt-2"><input name="InStockOnly" value="true" checked="@Model.Query.InStockOnly" type="checkbox" class="form-check-input" /><label class="form-check-label">Stock</label></div>
-    <div class="col-12"><button class="btn btn-primary">Filter</button></div>
+
+</section>
+
+<form method="get" class="filter-card">
+
+    <div class="row g-2 align-items-center">
+
+        <div class="col-lg-3">
+            <input name="Search"
+                   value="@Model.Query.Search"
+                   class="form-control"
+                   placeholder="Search comforting goods" />
+        </div>
+
+        <div class="col-lg-2">
+            <select name="MoodCategoryId" class="form-select">
+                <option value="">All moods</option>
+                @foreach (var c in Model.MoodCategories)
+                {
+                    <option value="@c.Id"
+                            selected="@(Model.Query.MoodCategoryId == c.Id)">
+                        @c.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-2">
+            <input type="number"
+                   step="0.01"
+                   name="MinPrice"
+                   value="@Model.Query.MinPrice"
+                   class="form-control"
+                   placeholder="Min price" />
+        </div>
+
+        <div class="col-lg-2">
+            <input type="number"
+                   step="0.01"
+                   name="MaxPrice"
+                   value="@Model.Query.MaxPrice"
+                   class="form-control"
+                   placeholder="Max price" />
+        </div>
+
+        <div class="col-lg-2">
+            <select name="SortBy" class="form-select">
+                <option value="created_desc">Newest</option>
+                <option value="created_asc"
+                        selected="@(Model.Query.SortBy == "created_asc")">
+                    Oldest
+                </option>
+                <option value="price_asc"
+                        selected="@(Model.Query.SortBy == "price_asc")">
+                    Price low-high
+                </option>
+                <option value="price_desc"
+                        selected="@(Model.Query.SortBy == "price_desc")">
+                    Price high-low
+                </option>
+            </select>
+        </div>
+
+        <div class="col-lg-1">
+            <button class="m-btn w-100">Filter</button>
+        </div>
+
+    </div>
+
+    <label class="form-check mt-3">
+        <input name="InStockOnly"
+               value="true"
+               checked="@Model.Query.InStockOnly"
+               type="checkbox"
+               class="form-check-input" />
+        In stock only
+    </label>
+
 </form>
+
 @if (TempData["CartMessage"] is string message)
 {
     <div class="alert alert-success">@message</div>
 }
+
 @if (TempData["CartError"] is string error)
 {
     <div class="alert alert-danger">@error</div>
 }
 
-<div class="row row-cols-1 row-cols-md-3 g-3">
+@if (!Model.Result.Items.Any())
+{
+    <div class="m-card empty-state">
+        <h3>No shelf items found</h3>
+        <p class="lead">Try another mood or clear your filters.</p>
+    </div>
+}
+
+<div class="product-grid">
+
     @foreach (var p in Model.Result.Items)
     {
         <div class="col">
@@ -82,13 +186,28 @@
             </div>
         </div>
     }
+
 </div>
 
-<nav class="mt-3">
+<nav class="mt-4">
     <ul class="pagination">
+
         @for (var i = 1; i <= Model.Result.TotalPages; i++)
         {
-            <li class="page-item @(i == Model.Result.Page ? "active" : "")"><a class="page-link" asp-action="Index" asp-route-Page="@i" asp-route-Search="@Model.Query.Search" asp-route-MoodCategoryId="@Model.Query.MoodCategoryId" asp-route-MinPrice="@Model.Query.MinPrice" asp-route-MaxPrice="@Model.Query.MaxPrice" asp-route-SortBy="@Model.Query.SortBy" asp-route-InStockOnly="@Model.Query.InStockOnly">@i</a></li>
+            <li class="page-item @(i == Model.Result.Page ? "active" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-Page="@i"
+                   asp-route-Search="@Model.Query.Search"
+                   asp-route-MoodCategoryId="@Model.Query.MoodCategoryId"
+                   asp-route-MinPrice="@Model.Query.MinPrice"
+                   asp-route-MaxPrice="@Model.Query.MaxPrice"
+                   asp-route-SortBy="@Model.Query.SortBy"
+                   asp-route-InStockOnly="@Model.Query.InStockOnly">
+                    @i
+                </a>
+            </li>
         }
+
     </ul>
 </nav>

@@ -25,5 +25,7 @@ public class MoodCategory
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? DeleteDate { get; set; }
 
+    public ICollection<Product> Products { get; set; } = new List<Product>();
+
     public ICollection<ProductMoodCategory> ProductMoodCategories { get; set; } = new List<ProductMoodCategory>();
 }

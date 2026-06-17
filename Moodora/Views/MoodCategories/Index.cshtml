@@ -4,14 +4,17 @@
     ViewData["Title"] = "Mood Categories";
 }
 
-<h1>Mood Categories</h1>
+<section class="shelf-head">
+    <h1>Mood Categories</h1>
 
-@if (User.IsInRole(ApplicationRoles.Admin))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Add New Mood</a>
-    </p>
-}
+    @if (User.IsInRole(ApplicationRoles.Admin))
+    {
+        <p>
+            <a asp-action="Create" class="btn btn-primary">Add New Mood</a>
+        </p>
+    }
+</section>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -37,17 +40,15 @@
                     }
                 </td>
                 <td>@Html.DisplayFor(modelItem => item.IsActive)</td>
-                <td>@item.ProductMoodCategories.Count</td>
+                <td>@item.Products.Count</td>
                 <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
                 <td>
-                    @if (User.IsInRole(ApplicationRoles.Admin))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <span>|</span>
-                    }
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+
                     @if (User.IsInRole(ApplicationRoles.Admin))
                     {
+                        <span>|</span>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                         <span>|</span>
                         <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     }

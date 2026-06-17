@@ -45,13 +45,14 @@ public class ProductsController(IProductService productService) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Product product)
     {
+        //ValidateMoodCategories(product);
         if (!ModelState.IsValid)
         {
-            return View(new Product { IsActive = true, SelectedMoodCategoryIds = [] });
+            await LoadMoodCategoriesAsync();
             return View(product);
         }
 
-        await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
+        await _productService.CreateAsync(product);
         return RedirectToAction(nameof(Index));
     }
 
@@ -61,7 +62,7 @@ public class ProductsController(IProductService productService) : Controller
         var product = await _productService.GetByIdAsync(id);
         if (product is null) return NotFound();
 
-        await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
+        await LoadMoodCategoriesAsync();
         return View(product);
     }
 
@@ -71,10 +72,10 @@ public class ProductsController(IProductService productService) : Controller
     public async Task<IActionResult> Edit(int id, Product product)
     {
         if (id != product.Id) return NotFound();
-        ValidateMoodCategories(product);
+
         if (!ModelState.IsValid)
         {
-            await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
+            await LoadMoodCategoriesAsync();
             return View(product);
         }
 
@@ -100,17 +101,9 @@ public class ProductsController(IProductService productService) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task LoadMoodCategoriesAsync(IEnumerable<int>? selectedCategoryIds = null)
+    private async Task LoadMoodCategoriesAsync()
     {
         var categories = await _productService.GetMoodCategoriesAsync();
-        ViewBag.MoodCategories = new MultiSelectList(categories, nameof(MoodCategory.Id), nameof(MoodCategory.Name), selectedCategoryIds);
-    }
-
-    private void ValidateMoodCategories(Product product)
-    {
-        if (product.SelectedMoodCategoryIds.Count == 0)
-        {
-            ModelState.AddModelError(nameof(Product.SelectedMoodCategoryIds), "Choose at least one mood category.");
-        }
+        ViewBag.MoodCategories = new SelectList(categories, nameof(MoodCategory.Id), nameof(MoodCategory.Name));
     }
 }
