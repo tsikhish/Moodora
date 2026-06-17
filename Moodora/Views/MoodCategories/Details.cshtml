@@ -1,7 +1,13 @@
-﻿@model Moodora.Models.MoodCategory
+@model Moodora.Models.MoodCategory
 
 @{
     ViewData["Title"] = Model.Name;
+
+    var products = Model.ProductMoodCategories
+        .Select(x => x.Product)
+        .Where(p => p is not null && p.DeleteDate == null)
+        .OrderBy(p => p!.Name)
+        .ToList();
 }
 
 <section class="detail-grid">
@@ -20,30 +26,91 @@
 
         <p class="lead">@Model.Description</p>
 
-        <p>
-            <strong>@Model.ProductMoodCategories.Count</strong> linked products ·
+        <p class="mb-4">
+            <strong>@products.Count</strong> linked products ·
             @(Model.IsActive ? "Active" : "Paused")
         </p>
 
-        <dt class="col-sm-2">Products</dt>
-        <dd class="col-sm-10">@Model.ProductMoodCategories.Count</dd>
-
-            @if (User.IsInRole(ApplicationRoles.Admin))
-            {
-                <a asp-action="Edit"
-                   asp-route-id="@Model.Id"
-                   class="m-btn text-decoration-none">
-                    Edit
-                </a>
-            }
-
-            <a asp-action="Index"
-               class="btn btn-outline-secondary">
-                Back
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            <a asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="m-btn text-decoration-none">
+                Edit
             </a>
+        }
 
-        </div>
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
 
     </div>
+
+</section>
+
+<section class="mt-5">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div>
+            <p class="eyebrow mb-1">Shop this mood</p>
+            <h2 class="mb-0">Products linked to @Model.Name</h2>
+        </div>
+    </div>
+
+    @if (!products.Any())
+    {
+        <div class="m-card">
+            <h3 class="h5 mb-2">No products yet</h3>
+            <p class="mb-0">This mood category does not have any linked products right now.</p>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var product in products)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <img class="card-img-top"
+                             src="@(string.IsNullOrWhiteSpace(product!.ImageUrl)
+                                             ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80"
+                                             : product.ImageUrl)"
+                             alt="@product.Name" />
+
+                        <div class="card-body d-flex flex-column gap-2">
+                            <h5 class="card-title mb-0">@product.Name</h5>
+                            <p class="card-text small text-muted mb-0">@product.Description</p>
+                            <p class="mb-0"><strong>$@product.Price</strong> · Stock: @product.Stock</p>
+                            <p class="mb-0">@(product.IsActive ? "Active" : "Inactive")</p>
+
+                            <div class="d-flex flex-wrap gap-2 align-items-center mt-auto">
+                                <a class="btn btn-outline-primary btn-sm"
+                                   asp-controller="Products"
+                                   asp-action="Details"
+                                   asp-route-id="@product.Id">
+                                    Details
+                                </a>
+
+                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-1 align-items-center">
+                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                    <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@product.Stock" name="quantity" value="1" aria-label="Quantity for @product.Name" />
+                                    <button type="submit" class="btn btn-primary btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Add</button>
+                                </form>
+
+                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                                    <input type="hidden" name="productId" value="@product.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
+                                    <button type="submit" class="btn btn-success btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Buy</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 
 </section>
