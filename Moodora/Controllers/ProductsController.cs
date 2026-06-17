@@ -45,6 +45,7 @@ public class ProductsController(IProductService productService) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Product product)
     {
+        ValidateMoodCategories(product);
         if (!ModelState.IsValid)
         {
             await LoadMoodCategoriesAsync();

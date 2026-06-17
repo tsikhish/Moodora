@@ -1,11 +1,20 @@
 ﻿@model Moodora.Models.Product
+
 @{
-    ViewData["Title"] = "Product Details";
+    ViewData["Title"] = Model.Name;
+
+    var moods = string.Join(", ",
+        Model.ProductMoodCategories
+            .Select(x => x.MoodCategory?.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+    );
+
+    var isOutOfStock = Model.Stock <= 0;
 }
-<h1>@Model.Name</h1>
+
 @if (TempData["CartMessage"] is string message)
 {
-    <div class="alert alert-success">@message</div>
+    <div class="alert alert-success mt-4">@message</div>
 }
 <p>Mood: @Model.MoodCategory?.Name</p>
 <p>@Model.Description</p>
@@ -13,7 +22,7 @@
 <p>Stock: @Model.Stock</p>
 @if (TempData["CartError"] is string error)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger mt-4">@error</div>
 }
 <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 align-items-end mb-2">
     <input type="hidden" name="productId" value="@Model.Id" />

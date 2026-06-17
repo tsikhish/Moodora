@@ -2,8 +2,17 @@
 @{
     ViewData["Title"] = "Create Product";
 }
-<h1>Create Product</h1>
-<form asp-action="Create" method="post" class="row g-3">
+
+<section class="shelf-head">
+    <p class="eyebrow">Admin panel</p>
+    <h1>Create product</h1>
+    <p class="lead">
+        Add a new object to a mood shelf. The image URL renders as a cropped production thumbnail and detail hero.
+    </p>
+</section>
+
+<form asp-action="Create" method="post" class="m-card detail-panel row g-3">
+
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="col-md-6"><label asp-for="Name"></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger"></span></div>
     <div class="col-md-6"><label asp-for="MoodCategoryId"></label><select asp-for="MoodCategoryId" class="form-select" asp-items="ViewBag.MoodCategories"></select></div>

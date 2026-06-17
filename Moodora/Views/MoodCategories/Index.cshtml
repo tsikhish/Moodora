@@ -4,7 +4,7 @@
     ViewData["Title"] = "Mood Categories";
 }
 
-<h1>Mood Categories</h1>
+<section class="shelf-head">
 
 @if (User.IsInRole(ApplicationRoles.Admin))
 {
@@ -48,11 +48,24 @@
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a>
                     @if (User.IsInRole(ApplicationRoles.Admin))
                     {
-                        <span>|</span>
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        <a class="btn btn-outline-secondary btn-sm"
+                           asp-action="Edit"
+                           asp-route-id="@item.Id">
+                            Edit
+                        </a>
+
+                        <a class="btn btn-outline-danger btn-sm"
+                           asp-action="Delete"
+                           asp-route-id="@item.Id">
+                            Delete
+                        </a>
                     }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+
+                </div>
+
+            </div>
+
+        </article>
+    }
+
+</div>
