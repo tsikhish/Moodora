@@ -26,6 +26,9 @@ public class Order
     [Phone]
     [StringLength(40)]
     public string PhoneNumber { get; set; } = string.Empty;
+    [Required]
+    [StringLength(2)]
+    public string CountryCode { get; set; } = "US";
 
     [Required]
     [StringLength(120)]
@@ -53,4 +56,5 @@ public class Order
     public ApplicationUser? User { get; set; }
 
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

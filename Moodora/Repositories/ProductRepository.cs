@@ -12,8 +12,9 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
     public async Task<PagedResult<Product>> GetPagedAsync(ProductQueryParameters query)
     {
         var items = _context.Products
-                    .Include(x => x.MoodCategory)
-                    .Where(x => x.DeleteDate == null && x.MoodCategory != null && x.MoodCategory.DeleteDate == null)
+                    .Include(x => x.ProductMoodCategories)
+                        .ThenInclude(x => x.MoodCategory)
+                    .Where(x => x.DeleteDate == null && x.ProductMoodCategories.Any(pc => pc.MoodCategory != null && pc.MoodCategory.DeleteDate == null))
                     .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -23,7 +24,7 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
 
         if (query.MoodCategoryId.HasValue)
         {
-            items = items.Where(x => x.MoodCategoryId == query.MoodCategoryId.Value);
+            items = items.Where(x => x.ProductMoodCategories.Any(pc => pc.MoodCategoryId == query.MoodCategoryId.Value));
         }
 
         if (query.IsActive.HasValue)
@@ -58,21 +59,48 @@ public class ProductRepository(ApplicationDbContext context) : IProductRepositor
         };
     }
 
-    public Task<Product?> GetByIdAsync(int id)
+    public async Task<Product?> GetByIdAsync(int id)
     {
-        return _context.Products
-            .Include(x => x.MoodCategory)
-            .FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null && x.MoodCategory != null && x.MoodCategory.DeleteDate == null);
+        var product = await _context.Products
+             .Include(x => x.ProductMoodCategories)
+                 .ThenInclude(x => x.MoodCategory)
+             .FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null && x.ProductMoodCategories.Any(pc => pc.MoodCategory != null && pc.MoodCategory.DeleteDate == null));
+
+        if (product is not null)
+        {
+            product.SelectedMoodCategoryIds = product.ProductMoodCategories.Select(x => x.MoodCategoryId).ToList();
+        }
+
+        return product;
     }
     public async Task AddAsync(Product product)
     {
+        var selectedCategoryIds = product.SelectedMoodCategoryIds.Distinct().ToList();
+        product.ProductMoodCategories = selectedCategoryIds
+            .Select(categoryId => new ProductMoodCategory { MoodCategoryId = categoryId })
+            .ToList();
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Product product)
     {
-        _context.Products.Update(product);
+        var existingProduct = await _context.Products
+          .Include(x => x.ProductMoodCategories)
+          .FirstOrDefaultAsync(x => x.Id == product.Id && x.DeleteDate == null);
+
+        if (existingProduct is null) return;
+
+        _context.Entry(existingProduct).CurrentValues.SetValues(product);
+        existingProduct.ProductMoodCategories.Clear();
+        foreach (var categoryId in product.SelectedMoodCategoryIds.Distinct())
+        {
+            existingProduct.ProductMoodCategories.Add(new ProductMoodCategory
+            {
+                ProductId = product.Id,
+                MoodCategoryId = categoryId
+            });
+        }
         await _context.SaveChangesAsync();
     }
 

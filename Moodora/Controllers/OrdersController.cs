@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Moodora.Data;
 using Moodora.Models;
 using Moodora.ViewModels.Orders;
+using System.Text.RegularExpressions;
 
 namespace Moodora.Controllers;
 
@@ -14,6 +15,15 @@ public class OrdersController(ApplicationDbContext context) : Controller
 {
     private static readonly string[] PaymentMethods = ["Cash on Delivery", "Demo Payment"];
     private readonly ApplicationDbContext _context = context;
+    private static readonly Dictionary<string, (string Name, string Pattern)> PhoneRules = new()
+    {
+        ["US"] = ("United States", @"^\+?1?[2-9]\d{2}[2-9]\d{2}\d{4}$"),
+        ["GB"] = ("United Kingdom", @"^\+?44?7\d{9}$|^0?7\d{9}$"),
+        ["FR"] = ("France", @"^\+?33?[1-9]\d{8}$|^0[1-9]\d{8}$"),
+        ["DE"] = ("Germany", @"^\+?49?[1-9]\d{6,13}$|^0[1-9]\d{6,13}$"),
+        ["GE"] = ("Georgia", @"^(995)?[3-7]\d{8}$|^0[3-7]\d{8}$"),
+        ["IN"] = ("India", @"^\+?91?[6-9]\d{9}$")
+    };
 
     public async Task<IActionResult> Checkout()
     {
@@ -25,6 +35,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         }
 
         ViewBag.PaymentMethods = BuildPaymentMethods();
+        ViewBag.Countries = BuildCountries();
         return View(new CheckoutViewModel
         {
             FullName = User.Identity?.Name ?? string.Empty,
@@ -50,6 +61,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         {
             ModelState.AddModelError(nameof(CheckoutViewModel.PaymentMethod), "Please choose a supported payment method.");
         }
+        ValidatePhoneNumber(viewModel);
 
         var unavailableItem = cartItems.FirstOrDefault(x =>
             x.Product is null || x.Product.DeleteDate != null || !x.Product.IsActive || x.Product.Stock < x.Quantity);
@@ -61,9 +73,11 @@ public class OrdersController(ApplicationDbContext context) : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.PaymentMethods = BuildPaymentMethods(viewModel.PaymentMethod);
+            ViewBag.Countries = BuildCountries(viewModel.CountryCode);
             return View(viewModel);
         }
 
+        var isDemoPayment = string.Equals(viewModel.PaymentMethod, "Demo Payment", StringComparison.OrdinalIgnoreCase);
         await using var transaction = await _context.Database.BeginTransactionAsync();
         var order = new Order
         {
@@ -94,15 +108,25 @@ public class OrdersController(ApplicationDbContext context) : Controller
                 Quantity = cartItem.Quantity,
                 LineTotal = lineTotal
             });
-            product.Stock -= cartItem.Quantity;
+            if (!isDemoPayment)
+            {
+                product.Stock -= cartItem.Quantity;
+            }
         }
 
         _context.Orders.Add(order);
-        _context.Carts.RemoveRange(cartItems);
+        if (!isDemoPayment)
+        {
+            _context.Carts.RemoveRange(cartItems);
+        }
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
 
         TempData["OrderMessage"] = $"Thank you! Order {order.OrderNumber} has been created.";
+        if (isDemoPayment)
+        {
+            return RedirectToAction("Pay", "Payments", new { orderId = order.Id });
+        }
         return RedirectToAction(nameof(Confirmation), new { id = order.Id });
     }
 
@@ -122,6 +146,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         var userId = GetCurrentUserId();
         var orders = await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
@@ -145,6 +170,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
     {
         var orders = await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .Include(x => x.User)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
@@ -157,6 +183,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
     {
         var order = await _context.Orders
             .Include(x => x.Items)
+             .Include(x => x.Payments)
             .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -199,7 +226,8 @@ public class OrdersController(ApplicationDbContext context) : Controller
         var userId = GetCurrentUserId();
         return await _context.Carts
             .Include(x => x.Product)
-                .ThenInclude(x => x!.MoodCategory)
+               .ThenInclude(x => x!.ProductMoodCategories)
+                    .ThenInclude(x => x.MoodCategory)
             .Where(x => x.UserId == userId && x.DeletedDate == null)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
@@ -210,6 +238,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         var userId = GetCurrentUserId();
         return await _context.Orders
             .Include(x => x.Items)
+            .Include(x => x.Payments)
             .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
     }
 
@@ -235,6 +264,26 @@ public class OrdersController(ApplicationDbContext context) : Controller
     {
         return new SelectList(PaymentMethods, selected);
     }
+    private static SelectList BuildCountries(string? selected = null)
+    {
+        return new SelectList(PhoneRules.Select(x => new { Value = x.Key, Text = x.Value.Name }), "Value", "Text", selected ?? "US");
+    }
+
+    private void ValidatePhoneNumber(CheckoutViewModel viewModel)
+    {
+        if (!PhoneRules.TryGetValue(viewModel.CountryCode, out var rule))
+        {
+            ModelState.AddModelError(nameof(CheckoutViewModel.CountryCode), "Please choose a supported country.");
+            return;
+        }
+
+        var normalizedPhoneNumber = Regex.Replace(viewModel.PhoneNumber ?? string.Empty, @"[\s().-]", string.Empty);
+        if (!Regex.IsMatch(normalizedPhoneNumber, rule.Pattern))
+        {
+            ModelState.AddModelError(nameof(CheckoutViewModel.PhoneNumber), $"Enter a valid phone number for {rule.Name}.");
+        }
+    }
+
 
     private static SelectList BuildStatuses(OrderStatus selected)
     {

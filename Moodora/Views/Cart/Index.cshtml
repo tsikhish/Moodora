@@ -61,7 +61,7 @@ else
                             <div class="fw-semibold">@product.Name</div>
                             <div class="small text-muted">Stock: @product.Stock</div>
                         </td>
-                        <td>@product.MoodCategory?.Name</td>
+                        <td>@string.Join(", ", product.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</td>
                         <td>@product.Price.ToString("C")</td>
                         <td>
                             <form asp-action="Update" method="post" class="d-flex gap-2">

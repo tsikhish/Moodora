@@ -7,7 +7,7 @@
     <div>
         <p class="text-uppercase text-muted fw-semibold mb-1">Secure checkout</p>
         <h1 class="display-6 mb-2">Complete your mood-powered order</h1>
-        <p class="mb-0 text-muted">Review your cart, add delivery details, and place your order.</p>
+        <p class="mb-0 text-muted">Review your cart, add delivery details, and choose cash delivery or the polished demo payment flow.</p>
     </div>
     <div class="order-hero-total">
         <span>Total</span>
@@ -34,8 +34,14 @@
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
+                            <label asp-for="CountryCode" class="form-label"></label>
+                            <select asp-for="CountryCode" asp-items="ViewBag.Countries" class="form-select"></select>
+                            <span asp-validation-for="CountryCode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
                             <label asp-for="PhoneNumber" class="form-label"></label>
-                            <input asp-for="PhoneNumber" class="form-control" />
+
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Use local or international format" />
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
@@ -55,7 +61,8 @@
                         </div>
                         <div class="col-12">
                             <label asp-for="PaymentMethod" class="form-label"></label>
-                            <select asp-for="PaymentMethod" asp-items="ViewBag.PaymentMethods" class="form-select"></select>
+                            <select asp-for="PaymentMethod" asp-items="ViewBag.PaymentMethods" class="form-select form-select-lg"></select>
+                            <div class="form-text">Choose Demo Payment to open the card page after confirming this order. Only validation data and the last 4 digits are saved.</div>
                             <span asp-validation-for="PaymentMethod" class="text-danger"></span>
                         </div>
                     </div>
@@ -85,7 +92,7 @@
                         <span>Total</span>
                         <strong>@Model.TotalAmount.ToString("C")</strong>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Confirm Order</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">Confirm & Continue</button>
                     <a class="btn btn-outline-secondary w-100 mt-2" asp-controller="Cart" asp-action="Index">Back to Cart</a>
                 </div>
             </div>

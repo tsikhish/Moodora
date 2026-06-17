@@ -11,9 +11,10 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
     public Task<List<MoodCategory>> GetAllAsync()
     {
         return _context.MoodCategories
-            .Include(x => x.Products.Where(product => product.DeleteDate == null))
+            .Include(x => x.ProductMoodCategories.Where(productCategory => productCategory.Product != null && productCategory.Product.DeleteDate == null))
+                .ThenInclude(x => x.Product)
             .Where(x => x.DeleteDate == null)
-            .Include(x => x.Products)
+         
             .OrderBy(x => x.Name)
             .ToListAsync();
     }
@@ -21,7 +22,8 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
     public Task<MoodCategory?> GetByIdAsync(int id)
     {
         return _context.MoodCategories
-            .Include(x => x.Products.Where(product => product.DeleteDate == null))
+    .Include(x => x.ProductMoodCategories.Where(productCategory => productCategory.Product != null && productCategory.Product.DeleteDate == null))
+                .ThenInclude(x => x.Product)
             .FirstOrDefaultAsync(x => x.Id == id && x.DeleteDate == null);
     }
 

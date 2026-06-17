@@ -37,7 +37,7 @@
                     }
                 </td>
                 <td>@Html.DisplayFor(modelItem => item.IsActive)</td>
-                <td>@item.Products.Count</td>
+                <td>@item.ProductMoodCategories.Count</td>
                 <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
                 <td>
                     @if (User.IsInRole(ApplicationRoles.Admin))

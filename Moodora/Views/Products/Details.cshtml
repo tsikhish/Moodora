@@ -16,7 +16,7 @@
 {
     <div class="alert alert-success mt-4">@message</div>
 }
-<p>Mood: @Model.MoodCategory?.Name</p>
+<p>Mood: @string.Join(", ", Model.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</p>
 <p>@Model.Description</p>
 <p>Price: <strong>$@Model.Price</strong></p>
 <p>Stock: @Model.Stock</p>
@@ -33,6 +33,12 @@
     </div>
     <button type="submit" class="btn btn-primary" @(Model.Stock <= 0 ? "disabled" : null)>Add to Cart</button>
     <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">View Cart</a>
+</form>
+<form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+    <input type="hidden" name="productId" value="@Model.Id" />
+    <input type="hidden" name="quantity" value="1" />
+    <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
+    <button type="submit" class="btn btn-success" @(Model.Stock <= 0 ? "disabled" : null)>Buy</button>
 </form>
 @if (User.IsInRole("Admin"))
 {

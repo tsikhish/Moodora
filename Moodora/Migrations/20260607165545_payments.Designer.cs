@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Moodora.Data;
 
@@ -11,9 +12,11 @@ using Moodora.Data;
 namespace Moodora.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607165545_payments")]
+    partial class payments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -326,11 +329,6 @@ namespace Moodora.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
-                    b.Property<string>("CountryCode")
-                        .IsRequired()
-                        .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -513,6 +511,9 @@ namespace Moodora.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<int>("MoodCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -529,22 +530,9 @@ namespace Moodora.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("Moodora.Models.ProductMoodCategory", b =>
-                {
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MoodCategoryId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductId", "MoodCategoryId");
-
                     b.HasIndex("MoodCategoryId");
 
-                    b.ToTable("ProductMoodCategories");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -666,28 +654,20 @@ namespace Moodora.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Moodora.Models.ProductMoodCategory", b =>
+            modelBuilder.Entity("Moodora.Models.Product", b =>
                 {
                     b.HasOne("Moodora.Models.MoodCategory", "MoodCategory")
-                        .WithMany("ProductMoodCategories")
+                        .WithMany("Products")
                         .HasForeignKey("MoodCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Moodora.Models.Product", "Product")
-                        .WithMany("ProductMoodCategories")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("MoodCategory");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Moodora.Models.MoodCategory", b =>
                 {
-                    b.Navigation("ProductMoodCategories");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Moodora.Models.Order", b =>
@@ -695,11 +675,6 @@ namespace Moodora.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("Moodora.Models.Product", b =>
-                {
-                    b.Navigation("ProductMoodCategories");
                 });
 #pragma warning restore 612, 618
         }
