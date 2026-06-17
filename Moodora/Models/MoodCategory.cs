@@ -27,5 +27,5 @@ public class MoodCategory
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
 
-
+    public ICollection<ProductMoodCategory> ProductMoodCategories { get; set; } = new List<ProductMoodCategory>();
 }
