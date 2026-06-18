@@ -6,5 +6,6 @@ namespace Moodora.ViewModels.Orders
     {
         public string? Search { get; set; }
         public OrderStatus? Status { get; set; }
+        public string? CustomerId { get; set; }
     }
 }

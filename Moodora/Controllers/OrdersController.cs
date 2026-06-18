@@ -193,6 +193,11 @@ public class OrdersController(ApplicationDbContext context) : Controller
             ordersQuery = ordersQuery.Where(x => x.Status == query.Status.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(query.CustomerId))
+        {
+            ordersQuery = ordersQuery.Where(x => x.UserId == query.CustomerId);
+        }
+
         var viewModel = new AdminOrderListViewModel
         {
             Query = query,
@@ -200,6 +205,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
         };
 
         ViewBag.Statuses = new SelectList(Enum.GetValues<OrderStatus>().Select(x => new { Value = x, Text = x.ToString() }), "Value", "Text", query.Status);
+        ViewBag.Customers = await BuildCustomerOptionsAsync(query.CustomerId);
         return View(viewModel);
     }
 
@@ -313,5 +319,22 @@ public class OrdersController(ApplicationDbContext context) : Controller
     private static SelectList BuildStatuses(OrderStatus selected)
     {
         return new SelectList(Enum.GetValues<OrderStatus>().Select(x => new { Value = x, Text = x.ToString() }), "Value", "Text", selected);
+    }
+    private async Task<SelectList> BuildCustomerOptionsAsync(string? selected = null)
+    {
+        var customers = await _context.Orders
+            .Include(x => x.User)
+            .Select(x => new
+            {
+                x.UserId,
+                CustomerName = x.User != null
+                    ? x.User.UserName ?? x.Email
+                    : x.Email
+            })
+            .Distinct()
+            .OrderBy(x => x.CustomerName)
+            .ToListAsync();
+
+        return new SelectList(customers, "UserId", "CustomerName", selected);
     }
 }

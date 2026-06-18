@@ -13,12 +13,17 @@
 
 <form method="get" class="filter-card mb-4">
     <div class="row g-2 align-items-center">
-        <div class="col-md-7">
+        <div class="col-md-4">
             <input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search order #, customer, email, city, or product" />
         </div>
         <div class="col-md-3">
+            <select name="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+                <option value="">All customers</option>
+            </select>
+        </div>
+        <div class="col-md-3">
             <select name="Status" class="form-select" asp-items="ViewBag.Statuses">
-                <option value="">All statuses</option>
+                <option value="">All order statuses</option>
             </select>
         </div>
         <div class="col-md-2">
@@ -47,7 +52,7 @@ else
                         <th>Customer</th>
                         <th>Delivery</th>
                         <th>Items</th>
-                        <th>Status</th>
+                        <th>Payment Status</th>
                         <th>Total</th>
                         <th></th>
                     </tr>
@@ -66,7 +71,15 @@ else
                             </td>
                             <td>@order.City</td>
                             <td>@order.Items.Sum(x => x.Quantity)</td>
-                            <td><span class="badge status-badge status-@order.Status.ToString().ToLowerInvariant()">@order.Status</span></td>
+                            <td>
+                                @{
+                                    var paymentStatus = order.Payments
+                                    .OrderByDescending(x => x.ProcessedAt ?? x.CreatedAt)
+                                    .Select(x => x.Status)
+                                    .FirstOrDefault(PaymentStatus.Pending);
+                                }
+                                <span class="badge status-badge status-@paymentStatus.ToString().ToLowerInvariant()">@paymentStatus</span>
+                            </td>
                             <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
                             <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-action="AdminDetails" asp-route-id="@order.Id">View details</a></td>
                         </tr>

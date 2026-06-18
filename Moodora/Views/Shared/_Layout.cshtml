@@ -39,10 +39,8 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
-                    <div class="collapse navbar-collapse" id="moodoraNav">
-
-                        <ul class="navbar-nav mx-auto">
-
+                    <div class="collapse navbar-collapse gap-lg-3" id="moodoraNav">
+                        <ul class="navbar-nav primary-nav mx-lg-auto">
                             <li class="nav-item">
                                 <a class="nav-link"
                                    asp-controller="Products"
@@ -69,7 +67,8 @@
                                         Mood Categories
                                     </a>
                                 </li>
-
+                            @if (!User.IsInRole(ApplicationRoles.Admin))
+                            {
                                 <li class="nav-item">
                                     <a class="nav-link"
                                        asp-controller="Orders"
@@ -77,38 +76,43 @@
                                         Order History
                                     </a>
                                 </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                        asp-controller="Cart"
-                                        asp-action="Index">
-                                        Cart
-                                    </a>
-                                </li>
+                            }
+                                @if (!User.IsInRole(ApplicationRoles.Admin))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link"
+                                           asp-controller="Cart"
+                                           asp-action="Index">
+                                            Cart
+                                        </a>
+                                    </li>
+                                }
                             }
 
                         </ul>
 
                         @if (User.IsInRole(ApplicationRoles.Admin))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-controller="Orders"
-                                   asp-action="Admin">
-                                    Admin Orders
-                                </a>
-                            </li>
+                            <ul class="navbar-nav admin-nav align-items-lg-center">
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="Orders"
+                                       asp-action="Admin">
+                                        Customer Orders
+                                    </a>
+                                </li>
 
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-controller="Products"
-                                   asp-action="Create">
-                                    Add Product
-                                </a>
-                            </li>
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="Products"
+                                       asp-action="Create">
+                                        Add Product
+                                    </a>
+                                </li>
+                            </ul>
                         }
 
-                        <ul class="navbar-nav align-items-lg-center">
+                        <ul class="navbar-nav user-nav align-items-lg-center ms-lg-auto">
 
                             @if (User.Identity?.IsAuthenticated == true)
                             {
