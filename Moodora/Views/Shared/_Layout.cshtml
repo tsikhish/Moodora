@@ -41,13 +41,6 @@
 
                     <div class="collapse navbar-collapse gap-lg-3" id="moodoraNav">
                         <ul class="navbar-nav primary-nav mx-lg-auto">
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-controller="Products"
-                                   asp-action="Index">
-                                    Shop
-                                </a>
-                            </li>
 
                             <li class="nav-item">
                                 <a class="nav-link"
@@ -62,31 +55,29 @@
                             {
                                 <li class="nav-item">
                                     <a class="nav-link"
-                                       asp-controller="MoodCategories"
-                                       asp-action="Index">
+                                    asp-controller="MoodCategories"
+                                    asp-action="Index">
                                         Mood Categories
                                     </a>
                                 </li>
-                            @if (!User.IsInRole(ApplicationRoles.Admin))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       asp-controller="Orders"
-                                       asp-action="History">
-                                        Order History
-                                    </a>
-                                </li>
-                            }
                                 @if (!User.IsInRole(ApplicationRoles.Admin))
                                 {
                                     <li class="nav-item">
                                         <a class="nav-link"
-                                           asp-controller="Cart"
-                                           asp-action="Index">
+                                        asp-controller="Orders"
+                                        asp-action="History">
+                                            Order History
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link"
+                                        asp-controller="Cart"
+                                        asp-action="Index">
                                             Cart
                                         </a>
                                     </li>
                                 }
+
                             }
 
                         </ul>

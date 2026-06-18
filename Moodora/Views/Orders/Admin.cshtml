@@ -78,7 +78,7 @@ else
                                     .Select(x => x.Status)
                                     .FirstOrDefault(PaymentStatus.Pending);
                                 }
-                                <span class="badge status-badge status-@paymentStatus.ToString().ToLowerInvariant()">@paymentStatus</span>
+                                <span class="badge payment-status-badge payment-status-@paymentStatus.ToString().ToLowerInvariant()">@paymentStatus</span>
                             </td>
                             <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
                             <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-action="AdminDetails" asp-route-id="@order.Id">View details</a></td>

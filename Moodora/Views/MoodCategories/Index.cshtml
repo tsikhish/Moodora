@@ -72,7 +72,11 @@ else
                     <td>
                         @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                         {
-                            <a href="@item.ImageUrl" target="_blank" rel="noopener noreferrer">View</a>
+                            <img class="thumb mood-category-thumb" src="@item.ImageUrl" alt="@($"{item.Name} mood category")" loading="lazy" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">No image</span>
                         }
                     </td>
                     <td>@(item.IsActive ? "Active" : "Inactive")</td>

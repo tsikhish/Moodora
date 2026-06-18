@@ -562,3 +562,27 @@ label, .form-label {
         margin: 0 12px
     }
 }
+.mood-category-thumb {
+    display: block;
+}
+
+.payment-status-badge {
+    border-radius: 999px;
+    padding: .5rem .75rem;
+    font-weight: 700;
+}
+
+.payment-status-pending {
+    background: #fff3cd;
+    color: #7a4f01;
+}
+
+.payment-status-successful {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.payment-status-failed {
+    background: #f8d7da;
+    color: #842029;
+}

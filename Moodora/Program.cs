@@ -116,7 +116,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Products}/{action=Index}/{id?}")
+    pattern: "{controller=Moodora}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 
