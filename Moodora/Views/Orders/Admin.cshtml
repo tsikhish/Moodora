@@ -1,4 +1,4 @@
-﻿@model IReadOnlyList<Moodora.Models.Order>
+﻿@model Moodora.ViewModels.Orders.AdminOrderListViewModel
 @{
     ViewData["Title"] = "Admin Orders";
 }
@@ -8,17 +8,33 @@
         <p class="text-uppercase text-muted fw-semibold mb-1">Admin</p>
         <h1 class="mb-0">Order Management</h1>
     </div>
-    <span class="badge bg-dark fs-6">@Model.Count order(s)</span>
+    <span class="badge bg-dark fs-6">@Model.Orders.Count order(s)</span>
 </div>
+
+<form method="get" class="filter-card mb-4">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-7">
+            <input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search order #, customer, email, city, or product" />
+        </div>
+        <div class="col-md-3">
+            <select name="Status" class="form-select" asp-items="ViewBag.Statuses">
+                <option value="">All statuses</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="m-btn w-100">Filter</button>
+        </div>
+    </div>
+</form>
 
 @if (TempData["AdminOrderMessage"] is string message)
 {
     <div class="alert alert-success">@message</div>
 }
 
-@if (!Model.Any())
+@if (!Model.Orders.Any())
 {
-    <div class="alert alert-info">No orders have been placed yet.</div>
+    <div class="alert alert-info">No orders match your filters.</div>
 }
 else
 {
@@ -30,13 +46,14 @@ else
                         <th>Order</th>
                         <th>Customer</th>
                         <th>Delivery</th>
+                        <th>Items</th>
                         <th>Status</th>
                         <th>Total</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var order in Model)
+                    @foreach (var order in Model.Orders)
                     {
                         <tr>
                             <td>
@@ -48,9 +65,10 @@ else
                                 <div class="small text-muted">@order.Email</div>
                             </td>
                             <td>@order.City</td>
+                            <td>@order.Items.Sum(x => x.Quantity)</td>
                             <td><span class="badge status-badge status-@order.Status.ToString().ToLowerInvariant()">@order.Status</span></td>
                             <td class="fw-semibold">@order.TotalAmount.ToString("C")</td>
-                            <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-action="AdminDetails" asp-route-id="@order.Id">Manage</a></td>
+                            <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-action="AdminDetails" asp-route-id="@order.Id">View details</a></td>
                         </tr>
                     }
                 </tbody>

@@ -36,8 +36,9 @@ public class ProductsController(IProductService productService) : Controller
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Create()
     {
-        await LoadMoodCategoriesAsync();
-        return View(new Product { IsActive = true });
+        var product = new Product { IsActive = true };
+        await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
+        return View(product);
     }
 
     [HttpPost]
@@ -48,7 +49,7 @@ public class ProductsController(IProductService productService) : Controller
         //ValidateMoodCategories(product);
         if (!ModelState.IsValid)
         {
-            await LoadMoodCategoriesAsync();
+            await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
             return View(product);
         }
 
@@ -62,7 +63,7 @@ public class ProductsController(IProductService productService) : Controller
         var product = await _productService.GetByIdAsync(id);
         if (product is null) return NotFound();
 
-        await LoadMoodCategoriesAsync();
+        await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
         return View(product);
     }
 
@@ -75,7 +76,7 @@ public class ProductsController(IProductService productService) : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadMoodCategoriesAsync();
+            await LoadMoodCategoriesAsync(product.SelectedMoodCategoryIds);
             return View(product);
         }
 
@@ -101,9 +102,9 @@ public class ProductsController(IProductService productService) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task LoadMoodCategoriesAsync()
+    private async Task LoadMoodCategoriesAsync(IEnumerable<int>? selectedIds = null)
     {
         var categories = await _productService.GetMoodCategoriesAsync();
-        ViewBag.MoodCategories = new SelectList(categories, nameof(MoodCategory.Id), nameof(MoodCategory.Name));
+        ViewBag.MoodCategories = new MultiSelectList(categories, nameof(MoodCategory.Id), nameof(MoodCategory.Name), selectedIds);
     }
 }

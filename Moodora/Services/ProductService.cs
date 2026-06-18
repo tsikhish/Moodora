@@ -28,6 +28,7 @@ public class ProductService(IProductRepository productRepository, IMoodCategoryR
     {
         product.CreatedAt = DateTime.UtcNow;
         product.UpdatedAt = DateTime.UtcNow;
+        product.ImageUrl = NormalizeImageUrl(product.ImageUrl);
         product.SelectedMoodCategoryIds = product.SelectedMoodCategoryIds.Distinct().ToList();
         if (product.Stock < 0) product.Stock = 0;
         await _productRepository.AddAsync(product);
@@ -36,7 +37,9 @@ public class ProductService(IProductRepository productRepository, IMoodCategoryR
     public async Task UpdateAsync(Product product)
     {
         product.UpdatedAt = DateTime.UtcNow;
+        product.ImageUrl = NormalizeImageUrl(product.ImageUrl);
         product.SelectedMoodCategoryIds = product.SelectedMoodCategoryIds.Distinct().ToList();
+
         if (product.Stock < 0) product.Stock = 0;
         await _productRepository.UpdateAsync(product);
     }
@@ -44,4 +47,21 @@ public class ProductService(IProductRepository productRepository, IMoodCategoryR
     public Task DeleteAsync(int id) => _productRepository.DeleteAsync(id);
 
     public async Task<List<MoodCategory>> GetMoodCategoriesAsync() => await _moodCategoryRepository.GetAllAsync();
+    private static string? NormalizeImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return null;
+        }
+
+        var trimmed = imageUrl.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("/", StringComparison.Ordinal))
+        {
+            return trimmed;
+        }
+
+        return $"https://{trimmed}";
+    }
 }

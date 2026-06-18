@@ -18,11 +18,14 @@
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
-            <a class="btn btn-outline-primary"
-               asp-controller="Cart"
-               asp-action="Index">
-                🛒 My Cart
-            </a>
+            @if (!User.IsInRole(ApplicationRoles.Admin))
+            {
+                <a class="btn btn-outline-primary"
+                   asp-controller="Cart"
+                   asp-action="Index">
+                    🛒 My Cart
+                </a>
+            }
 
             @if (User.IsInRole(ApplicationRoles.Admin))
             {
@@ -96,6 +99,16 @@
                    class="form-control"
                    placeholder="Max price" />
         </div>
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            <div class="col-lg-2">
+                <select name="IsActive" class="form-select">
+                    <option value="">All statuses</option>
+                    <option value="true" selected="@(Model.Query.IsActive == true)">Active</option>
+                    <option value="false" selected="@(Model.Query.IsActive == false)">Inactive</option>
+                </select>
+            </div>
+        }
 
         <div class="col-lg-2">
             <select name="SortBy" class="form-select">
@@ -149,40 +162,132 @@
         <p class="lead">Try another mood or clear your filters.</p>
     </div>
 }
-
 <div class="product-grid">
 
     @foreach (var p in Model.Result.Items)
     {
         <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5>@p.Name</h5>
-                    <p class="small text-muted">@string.Join(", ", p.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</p>
-                    <p>@p.Description</p>
-                    <p><strong>$@p.Price</strong> · Stock: @p.Stock</p>
-                    <p>@(p.IsActive ? "Active" : "Inactive")</p>
-                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@p.Id">Details</a>
-                        <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-1 align-items-center">
-                            <input type="hidden" name="productId" value="@p.Id" />
-                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-                            <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@p.Stock" name="quantity" value="1" aria-label="Quantity for @p.Name" />
-                            <button type="submit" class="btn btn-primary btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Add</button>
-                        </form>
-                        <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
-                            <input type="hidden" name="productId" value="@p.Id" />
-                            <input type="hidden" name="quantity" value="1" />
-                            <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
-                            <button type="submit" class="btn btn-success btn-sm" @(p.Stock <= 0 ? "disabled" : null)>Buy</button>
-                        </form>
-                    </div>
-                    @if (User.IsInRole(ApplicationRoles.Admin))
-                    {
-                        <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id">Edit</a>
-                        <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@p.Id">Delete</a>
-                    }
+            <div class="card h-100 product-card">
+
+                @{
+                    var productImageUrl = string.IsNullOrWhiteSpace(p.DisplayImageUrl)
+                    ? "https://placehold.co/800x600?text=Moodora"
+                    : p.DisplayImageUrl;
+                }
+
+                <div class="product-img">
+                    <img src="@productImageUrl"
+                         alt="@p.Name"
+                         loading="lazy"
+                         onerror="this.onerror=null;this.src='https://placehold.co/800x600?text=Moodora';" />
                 </div>
+
+                <div class="card-body">
+
+                    <h5>@p.Name</h5>
+
+                    <p class="small text-muted">
+                        @string.Join(", ",
+                        p.ProductMoodCategories
+                        .Select(x => x.MoodCategory?.Name)
+                        .Where(name => !string.IsNullOrWhiteSpace(name)))
+                </p>
+
+                <p>@p.Description</p>
+
+                <p>
+                    <strong>$@p.Price</strong>
+                    · Stock: @p.Stock
+                </p>
+
+                <p>
+                    @(p.IsActive ? "Active" : "Inactive")
+                </p>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+
+                    <a class="btn btn-outline-primary btn-sm"
+                       asp-action="Details"
+                       asp-route-id="@p.Id">
+                        Details
+                    </a>
+
+                    @if (User.IsInRole(ApplicationRoles.Admin))
+                        {
+                            <a class="btn btn-outline-secondary btn-sm"
+                               asp-action="Edit"
+                               asp-route-id="@p.Id">
+                                Edit
+                            </a>
+
+                            <a class="btn btn-outline-danger btn-sm"
+                               asp-action="Delete"
+                               asp-route-id="@p.Id">
+                                Delete
+                            </a>
+                        }
+                        else
+                        {
+                            <form asp-controller="Cart"
+                                  asp-action="Add"
+                                  method="post"
+                                  class="d-flex gap-1 align-items-center">
+
+                                <input type="hidden"
+                                       name="productId"
+                                       value="@p.Id" />
+
+                                <input type="hidden"
+                                       name="returnUrl"
+                                       value="@Context.Request.Path@Context.Request.QueryString" />
+
+                                <input class="form-control form-control-sm"
+                                       style="width:75px;"
+                                       type="number"
+                                       min="1"
+                                       max="@p.Stock"
+                                       name="quantity"
+                                       value="1"
+                                       aria-label="Quantity for @p.Name" />
+
+                                <button type="submit"
+                                        class="btn btn-primary btn-sm"
+                                        disabled="@(p.Stock <= 0)">
+                                    Add
+                                </button>
+
+                            </form>
+
+                            <form asp-controller="Cart"
+                                  asp-action="Add"
+                                  method="post"
+                                  class="d-inline">
+
+                                <input type="hidden"
+                                       name="productId"
+                                       value="@p.Id" />
+
+                                <input type="hidden"
+                                       name="quantity"
+                                       value="1" />
+
+                                <input type="hidden"
+                                       name="returnUrl"
+                                       value='@Url.Action("Checkout", "Orders")' />
+
+                                <button type="submit"
+                                        class="btn btn-success btn-sm"
+                                        disabled="@(p.Stock <= 0)">
+                                    Buy
+                                </button>
+
+                            </form>
+                        }
+
+                    </div>
+
+                </div>
+
             </div>
         </div>
     }
@@ -194,19 +299,20 @@
 
         @for (var i = 1; i <= Model.Result.TotalPages; i++)
         {
-            <li class="page-item @(i == Model.Result.Page ? "active" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-Page="@i"
-                   asp-route-Search="@Model.Query.Search"
-                   asp-route-MoodCategoryId="@Model.Query.MoodCategoryId"
-                   asp-route-MinPrice="@Model.Query.MinPrice"
-                   asp-route-MaxPrice="@Model.Query.MaxPrice"
-                   asp-route-SortBy="@Model.Query.SortBy"
-                   asp-route-InStockOnly="@Model.Query.InStockOnly">
-                    @i
-                </a>
-            </li>
+                    <li class="page-item @(i == Model.Result.Page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-Page="@i"
+                           asp-route-Search="@Model.Query.Search"
+                           asp-route-MoodCategoryId="@Model.Query.MoodCategoryId"
+                           asp-route-MinPrice="@Model.Query.MinPrice"
+                           asp-route-MaxPrice="@Model.Query.MaxPrice"
+                           asp-route-SortBy="@Model.Query.SortBy"
+                           asp-route-InStockOnly="@Model.Query.InStockOnly"
+                           asp-route-IsActive="@Model.Query.IsActive">
+                            @i
+                        </a>
+                    </li>
         }
 
     </ul>

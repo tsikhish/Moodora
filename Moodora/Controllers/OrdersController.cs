@@ -27,6 +27,10 @@ public class OrdersController(ApplicationDbContext context) : Controller
 
     public async Task<IActionResult> Checkout()
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
         var cartItems = await LoadCurrentCartAsync();
         if (cartItems.Count == 0)
         {
@@ -103,7 +107,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
-                ProductImage = product.ImageUrl,
+                ProductImage = product.DisplayImageUrl,
                 UnitPrice = product.Price,
                 Quantity = cartItem.Quantity,
                 LineTotal = lineTotal
@@ -166,16 +170,37 @@ public class OrdersController(ApplicationDbContext context) : Controller
     }
 
     [Authorize(Roles = ApplicationRoles.Admin)]
-    public async Task<IActionResult> Admin()
+    public async Task<IActionResult> Admin([FromQuery] AdminOrderQueryParameters query)
     {
-        var orders = await _context.Orders
-            .Include(x => x.Items)
+        var ordersQuery = _context.Orders
+           .Include(x => x.Items)
             .Include(x => x.Payments)
             .Include(x => x.User)
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync();
+             .AsQueryable();
 
-        return View(orders);
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            ordersQuery = ordersQuery.Where(x =>
+                x.OrderNumber.Contains(query.Search) ||
+                x.FullName.Contains(query.Search) ||
+                x.Email.Contains(query.Search) ||
+                x.City.Contains(query.Search) ||
+                x.Items.Any(item => item.ProductName.Contains(query.Search)));
+        }
+
+        if (query.Status.HasValue)
+        {
+            ordersQuery = ordersQuery.Where(x => x.Status == query.Status.Value);
+        }
+
+        var viewModel = new AdminOrderListViewModel
+        {
+            Query = query,
+            Orders = await ordersQuery.OrderByDescending(x => x.CreatedAt).ToListAsync()
+        };
+
+        ViewBag.Statuses = new SelectList(Enum.GetValues<OrderStatus>().Select(x => new { Value = x, Text = x.ToString() }), "Value", "Text", query.Status);
+        return View(viewModel);
     }
 
     [Authorize(Roles = ApplicationRoles.Admin)]

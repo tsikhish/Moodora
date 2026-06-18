@@ -80,14 +80,33 @@
 
                                 <li class="nav-item">
                                     <a class="nav-link"
-                                       asp-controller="Cart"
-                                       asp-action="Index">
+                                        asp-controller="Cart"
+                                        asp-action="Index">
                                         Cart
                                     </a>
                                 </li>
                             }
 
                         </ul>
+
+                        @if (User.IsInRole(ApplicationRoles.Admin))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Orders"
+                                   asp-action="Admin">
+                                    Admin Orders
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Products"
+                                   asp-action="Create">
+                                    Add Product
+                                </a>
+                            </li>
+                        }
 
                         <ul class="navbar-nav align-items-lg-center">
 

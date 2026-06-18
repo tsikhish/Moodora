@@ -1,4 +1,12 @@
 ﻿(() => {
+    const fallbackImage = "https://placehold.co/800x600?text=Image+preview";
+
+    const normalizeImageUrl = (value) => {
+        const url = value ? value.trim() : "";
+        if (!url) return "";
+        if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/")) return url;
+        return `https://${url}`;
+    };
     const setPreview = (input) => {
         const targetId = input.dataset.preview;
         if (!targetId) return;
@@ -6,7 +14,7 @@
         const target = document.getElementById(targetId);
         if (!target) return;
 
-        const url = input.value ? input.value.trim() : "";
+        const url = normalizeImageUrl(input.value);
 
         if (!url) {
             target.innerHTML = "";
@@ -15,11 +23,13 @@
         }
 
         const safeUrl = url.replace(/"/g, "&quot;");
+        const safeFallback = fallbackImage.replace(/"/g, "&quot;");
 
+        target.classList.remove("is-broken");
         target.innerHTML = `
-            <img src="${safeUrl}" 
+            <img src="${safeUrl}"
                  alt="Image preview"
-                 onerror="this.parentElement.classList.add('is-broken'); this.remove();" />
+                 onerror="this.onerror=null; this.src='${safeFallback}'; this.parentElement.classList.add('is-broken');" />
         `;
     };
 

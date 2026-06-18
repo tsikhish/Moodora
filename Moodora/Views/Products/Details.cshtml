@@ -10,37 +10,59 @@
     );
 
     var isOutOfStock = Model.Stock <= 0;
+    var productImageUrl = string.IsNullOrWhiteSpace(Model.DisplayImageUrl)
+        ? "https://placehold.co/1000x750?text=Moodora"
+        : Model.DisplayImageUrl;
 }
 
 @if (TempData["CartMessage"] is string message)
 {
     <div class="alert alert-success mt-4">@message</div>
 }
-<p>Mood: @string.Join(", ", Model.ProductMoodCategories.Select(x => x.MoodCategory?.Name).Where(name => !string.IsNullOrWhiteSpace(name)))</p>
-<p>@Model.Description</p>
-<p>Price: <strong>$@Model.Price</strong></p>
-<p>Stock: @Model.Stock</p>
+
 @if (TempData["CartError"] is string error)
 {
     <div class="alert alert-danger mt-4">@error</div>
 }
-<form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 align-items-end mb-2">
-    <input type="hidden" name="productId" value="@Model.Id" />
-    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-    <div>
-        <label class="form-label" for="quantity">Quantity</label>
-        <input class="form-control" id="quantity" type="number" min="1" max="@Model.Stock" name="quantity" value="1" />
+
+<section class="detail-grid">
+    <img class="product-detail-image" src="@productImageUrl" alt="@Model.Name" onerror="this.onerror=null;this.src='https://placehold.co/1000x750?text=Moodora';" />
+
+    <div class="m-card detail-panel">
+        <p class="eyebrow">Product details</p>
+        <h1>@Model.Name</h1>
+        <p class="moods">Mood: @moods</p>
+        <p>@Model.Description</p>
+        <p>Price: <strong>$@Model.Price</strong></p>
+        <p>Stock: @Model.Stock</p>
+        <p>Status: @(Model.IsActive ? "Active" : "Inactive")</p>
+
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+                <a class="btn btn-outline-secondary" asp-action="Index">Back to Products</a>
+            </div>
+        }
+        else
+        {
+            <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2 align-items-end mb-2">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                <div>
+                    <label class="form-label" for="quantity">Quantity</label>
+                    <input class="form-control" id="quantity" type="number" min="1" max="@Model.Stock" name="quantity" value="1" />
+                </div>
+                <button type="submit" class="btn btn-primary" @(isOutOfStock ? "disabled" : null)>Add to Cart</button>
+                <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">View Cart</a>
+            </form>
+            <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" name="quantity" value="1" />
+                <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
+                <button type="submit" class="btn btn-success" @(isOutOfStock ? "disabled" : null)>Buy</button>
+            </form>
+        }
     </div>
-    <button type="submit" class="btn btn-primary" @(Model.Stock <= 0 ? "disabled" : null)>Add to Cart</button>
-    <a class="btn btn-outline-primary" asp-controller="Cart" asp-action="Index">View Cart</a>
-</form>
-<form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
-    <input type="hidden" name="productId" value="@Model.Id" />
-    <input type="hidden" name="quantity" value="1" />
-    <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
-    <button type="submit" class="btn btn-success" @(Model.Stock <= 0 ? "disabled" : null)>Buy</button>
-</form>
-@if (User.IsInRole("Admin"))
-{
-    <a class="btn btn-secondary mt-2" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-}
+</section>

@@ -1,59 +1,95 @@
-﻿@model IEnumerable<Moodora.Models.MoodCategory>
+﻿@model Moodora.ViewModels.MoodCategories.MoodCategoryListViewModel
 
 @{
     ViewData["Title"] = "Mood Categories";
 }
 
 <section class="shelf-head">
-    <h1>Mood Categories</h1>
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+        <div>
+            <p class="eyebrow">Admin panel</p>
+            <h1>Mood Categories</h1>
+            <p class="lead">Search, filter, and manage mood shelves used to organize products.</p>
+        </div>
 
-    @if (User.IsInRole(ApplicationRoles.Admin))
-    {
-        <p>
+        @if (User.IsInRole(ApplicationRoles.Admin))
+        {
             <a asp-action="Create" class="btn btn-primary">Add New Mood</a>
-        </p>
-    }
+        }
+    </div>
 </section>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Name)</th>
-            <th>@Html.DisplayNameFor(model => model.Description)</th>
-            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
-            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
-            <th>Products</th>
-            <th>@Html.DisplayNameFor(model => model.CreatedAt)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                <td>
-                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
-                    {
-                        <a href="@item.ImageUrl" target="_blank" rel="noopener noreferrer">View</a>
-                    }
-                </td>
-                <td>@Html.DisplayFor(modelItem => item.IsActive)</td>
-                <td>@item.Products.Count</td>
-                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+<form method="get" class="filter-card mb-4">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <input name="Search" value="@Model.Query.Search" class="form-control" placeholder="Search mood name or description" />
+        </div>
+        <div class="col-md-3">
+            <select name="IsActive" class="form-select">
+                <option value="">All statuses</option>
+                <option value="true" selected="@(Model.Query.IsActive == true)">Active</option>
+                <option value="false" selected="@(Model.Query.IsActive == false)">Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="SortBy" class="form-select">
+                <option value="name_asc" selected="@(Model.Query.SortBy == "name_asc")">Name A-Z</option>
+                <option value="name_desc" selected="@(Model.Query.SortBy == "name_desc")">Name Z-A</option>
+                <option value="created_desc" selected="@(Model.Query.SortBy == "created_desc")">Newest</option>
+                <option value="created_asc" selected="@(Model.Query.SortBy == "created_asc")">Oldest</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button class="m-btn w-100">Filter</button>
+        </div>
+    </div>
+</form>
 
-                    @if (User.IsInRole(ApplicationRoles.Admin))
-                    {
-                        <span>|</span>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <span>|</span>
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    }
-                </td>
+@if (!Model.Categories.Any())
+{
+    <div class="alert alert-info">No mood categories match your filters.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Image</th>
+                <th>Active</th>
+                <th>Products</th>
+                <th>Created On</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Categories)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <a href="@item.ImageUrl" target="_blank" rel="noopener noreferrer">View</a>
+                        }
+                    </td>
+                    <td>@(item.IsActive ? "Active" : "Inactive")</td>
+                    <td>@item.ProductMoodCategories.Count</td>
+                    <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        @if (User.IsInRole(ApplicationRoles.Admin))
+                        {
+                            <span>|</span>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                            <span>|</span>
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
