@@ -31,6 +31,11 @@ public class OrdersController(ApplicationDbContext context) : Controller
         {
             return Forbid();
         }
+        if (await IsCurrentUserBlockedAsync())
+        {
+            TempData["CartError"] = "Your account is blocked from buying products. You can still browse products and mood categories.";
+            return RedirectToAction("Index", "Products");
+        }
         var cartItems = await LoadCurrentCartAsync();
         if (cartItems.Count == 0)
         {
@@ -47,6 +52,30 @@ public class OrdersController(ApplicationDbContext context) : Controller
             CartItems = cartItems
         });
     }
+    [HttpPost]
+    [Authorize(Roles = ApplicationRoles.Admin)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleUserBlock(int id)
+    {
+        var order = await _context.Orders
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (order?.User is null)
+        {
+            return NotFound();
+        }
+
+        order.User.IsBlocked = !order.User.IsBlocked;
+        await _context.SaveChangesAsync();
+
+        TempData["AdminOrderMessage"] = order.User.IsBlocked
+            ? $"{order.FullName} has been blocked from buying products."
+            : $"{order.FullName} can buy products again.";
+
+        return RedirectToAction(nameof(AdminDetails), new { id });
+    }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -250,6 +279,11 @@ public class OrdersController(ApplicationDbContext context) : Controller
         TempData["AdminOrderMessage"] = $"Order {order.OrderNumber} status updated to {status}.";
 
         return RedirectToAction(nameof(AdminDetails), new { id });
+    }
+    private async Task<bool> IsCurrentUserBlockedAsync()
+    {
+        var userId = GetCurrentUserId();
+        return await _context.Users.AnyAsync(x => x.Id == userId && x.IsBlocked);
     }
 
     private async Task<List<Cart>> LoadCurrentCartAsync()

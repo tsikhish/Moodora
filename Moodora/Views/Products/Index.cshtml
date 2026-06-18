@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Products";
+    var isBlockedUser = ViewBag.IsBlockedUser as bool? ?? false;
 }
 
 <section class="shelf-head">
@@ -108,6 +109,10 @@
                     <option value="false" selected="@(Model.Query.IsActive == false)">Inactive</option>
                 </select>
             </div>
+        }
+        else if (isBlockedUser)
+        {
+            <span class="badge text-bg-warning">Buying blocked</span>
         }
 
         <div class="col-lg-2">

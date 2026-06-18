@@ -18,6 +18,11 @@ public class PaymentsController(ApplicationDbContext context) : Controller
 
     public async Task<IActionResult> Pay(int orderId)
     {
+        if (await IsCurrentUserBlockedAsync())
+        {
+            TempData["CartError"] = "Your account is blocked from buying products. You can still browse products and mood categories.";
+            return RedirectToAction("Index", "Products");
+        }
         var order = await LoadUserOrderAsync(orderId);
         if (order is null)
         {
@@ -37,6 +42,11 @@ public class PaymentsController(ApplicationDbContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Pay(PaymentFormViewModel viewModel)
     {
+        if (await IsCurrentUserBlockedAsync())
+        {
+            TempData["CartError"] = "Your account is blocked from buying products. You can still browse products and mood categories.";
+            return RedirectToAction("Index", "Products");
+        }
         var order = await LoadUserOrderAsync(viewModel.OrderId);
         if (order is null)
         {
@@ -184,7 +194,11 @@ public class PaymentsController(ApplicationDbContext context) : Controller
             .ToListAsync();
         _context.Carts.RemoveRange(cartItems);
     }
-
+    private async Task<bool> IsCurrentUserBlockedAsync()
+    {
+        var userId = GetCurrentUserId();
+        return await _context.Users.AnyAsync(x => x.Id == userId && x.IsBlocked);
+    }   
     private static PaymentFormViewModel BuildFormViewModel(Order order)
     {
         return new PaymentFormViewModel

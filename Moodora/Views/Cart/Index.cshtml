@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "My Cart";
     var cartTotal = Model.Sum(x => (x.Product?.Price ?? 0) * x.Quantity);
+    var isBlockedUser = ViewBag.IsBlockedUser as bool? ?? false;
 }
 
 <section class="page-shell">
@@ -29,8 +30,7 @@
             <div class="alert alert-danger rounded-pill">@error</div>
         }
 
-@if (!Model.Any())
-{
+@if (Model.Any() && !isBlockedUser){
             <div class="soft-card card-body">Your cart is empty. Choose products to add them here.</div>
 }
 else
@@ -89,8 +89,15 @@ else
             </tfoot>
         </table>
     </div>
-    <div class="text-end">
-        <a class="btn btn-primary btn-lg" asp-controller="Orders" asp-action="Checkout">Proceed to Checkout</a>
-    </div>
+            @if (isBlockedUser)
+            {
+                <div class="alert alert-warning">Your account is blocked from buying products. You can still browse products and mood categories.</div>
+            }
+            else
+            {
+                <div class="text-end">
+                    <a class="btn btn-primary btn-lg" asp-controller="Orders" asp-action="Checkout">Proceed to Checkout</a>
+                </div>
+            }
 }
 </section>

@@ -10,6 +10,7 @@
     );
 
     var isOutOfStock = Model.Stock <= 0;
+    var isBlockedUser = ViewBag.IsBlockedUser as bool? ?? false;
     var productImageUrl = string.IsNullOrWhiteSpace(Model.DisplayImageUrl)
         ? "https://placehold.co/1000x750?text=Moodora"
         : Model.DisplayImageUrl;
@@ -44,6 +45,11 @@
                 <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
                 <a class="btn btn-outline-secondary" asp-action="Index">Back to Products</a>
             </div>
+        }
+        else if (isBlockedUser)
+        {
+            <div class="alert alert-warning">Your account is blocked from buying products. You can still browse products and mood categories.</div>
+            <a class="btn btn-outline-secondary" asp-action="Index">Back to Products</a>
         }
         else
         {
