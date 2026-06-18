@@ -7,14 +7,13 @@
 <div class="order-success text-center p-5 mb-4">
     <div class="order-success-icon">✓</div>
     <h1 class="display-6">Order confirmed</h1>
-    <p class="lead mb-1">Your order <strong>@Model.OrderNumber</strong> was created successfully.</p>
+    <p class="lead mb-1">Your order was created successfully.</p>
     <p class="text-muted mb-4">We saved your product names and prices exactly as they were at checkout.</p>
     <a class="btn btn-primary" asp-action="Details" asp-route-id="@Model.Id">View Order Details</a>
     @if (Model.PaymentMethod == "Demo Payment" && !Model.Payments.Any(x => x.Status == PaymentStatus.Successful))
     {
         <a class="btn btn-primary" asp-controller="Payments" asp-action="Pay" asp-route-orderId="@Model.Id">Pay now</a>
     }
-    <a class="btn btn-outline-secondary" asp-action="Details" asp-route-id="@Model.Id">View Order Details</a>
 </div>
 
 @await Html.PartialAsync("_OrderDetailsCard", Model)
