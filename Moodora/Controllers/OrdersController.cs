@@ -27,6 +27,15 @@ public class OrdersController(ApplicationDbContext context) : Controller
 
     public async Task<IActionResult> Checkout()
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
+        if (await IsCurrentUserBlockedAsync())
+        {
+            TempData["CartError"] = "Your account is blocked from buying products. You can still browse products and mood categories.";
+            return RedirectToAction("Index", "Products");
+        }
         var cartItems = await LoadCurrentCartAsync();
         if (cartItems.Count == 0)
         {
@@ -43,6 +52,30 @@ public class OrdersController(ApplicationDbContext context) : Controller
             CartItems = cartItems
         });
     }
+    [HttpPost]
+    [Authorize(Roles = ApplicationRoles.Admin)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleUserBlock(int id)
+    {
+        var order = await _context.Orders
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (order?.User is null)
+        {
+            return NotFound();
+        }
+
+        order.User.IsBlocked = !order.User.IsBlocked;
+        await _context.SaveChangesAsync();
+
+        TempData["AdminOrderMessage"] = order.User.IsBlocked
+            ? $"{order.FullName} has been blocked from buying products."
+            : $"{order.FullName} can buy products again.";
+
+        return RedirectToAction(nameof(AdminDetails), new { id });
+    }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -103,7 +136,7 @@ public class OrdersController(ApplicationDbContext context) : Controller
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
-                ProductImage = product.ImageUrl,
+                ProductImage = product.DisplayImageUrl,
                 UnitPrice = product.Price,
                 Quantity = cartItem.Quantity,
                 LineTotal = lineTotal
@@ -166,16 +199,43 @@ public class OrdersController(ApplicationDbContext context) : Controller
     }
 
     [Authorize(Roles = ApplicationRoles.Admin)]
-    public async Task<IActionResult> Admin()
+    public async Task<IActionResult> Admin([FromQuery] AdminOrderQueryParameters query)
     {
-        var orders = await _context.Orders
-            .Include(x => x.Items)
+        var ordersQuery = _context.Orders
+           .Include(x => x.Items)
             .Include(x => x.Payments)
             .Include(x => x.User)
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync();
+             .AsQueryable();
 
-        return View(orders);
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            ordersQuery = ordersQuery.Where(x =>
+                x.OrderNumber.Contains(query.Search) ||
+                x.FullName.Contains(query.Search) ||
+                x.Email.Contains(query.Search) ||
+                x.City.Contains(query.Search) ||
+                x.Items.Any(item => item.ProductName.Contains(query.Search)));
+        }
+
+        if (query.Status.HasValue)
+        {
+            ordersQuery = ordersQuery.Where(x => x.Status == query.Status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.CustomerId))
+        {
+            ordersQuery = ordersQuery.Where(x => x.UserId == query.CustomerId);
+        }
+
+        var viewModel = new AdminOrderListViewModel
+        {
+            Query = query,
+            Orders = await ordersQuery.OrderByDescending(x => x.CreatedAt).ToListAsync()
+        };
+
+        ViewBag.Statuses = new SelectList(Enum.GetValues<OrderStatus>().Select(x => new { Value = x, Text = x.ToString() }), "Value", "Text", query.Status);
+        ViewBag.Customers = await BuildCustomerOptionsAsync(query.CustomerId);
+        return View(viewModel);
     }
 
     [Authorize(Roles = ApplicationRoles.Admin)]
@@ -219,6 +279,11 @@ public class OrdersController(ApplicationDbContext context) : Controller
         TempData["AdminOrderMessage"] = $"Order {order.OrderNumber} status updated to {status}.";
 
         return RedirectToAction(nameof(AdminDetails), new { id });
+    }
+    private async Task<bool> IsCurrentUserBlockedAsync()
+    {
+        var userId = GetCurrentUserId();
+        return await _context.Users.AnyAsync(x => x.Id == userId && x.IsBlocked);
     }
 
     private async Task<List<Cart>> LoadCurrentCartAsync()
@@ -288,5 +353,22 @@ public class OrdersController(ApplicationDbContext context) : Controller
     private static SelectList BuildStatuses(OrderStatus selected)
     {
         return new SelectList(Enum.GetValues<OrderStatus>().Select(x => new { Value = x, Text = x.ToString() }), "Value", "Text", selected);
+    }
+    private async Task<SelectList> BuildCustomerOptionsAsync(string? selected = null)
+    {
+        var customers = await _context.Orders
+            .Include(x => x.User)
+            .Select(x => new
+            {
+                x.UserId,
+                CustomerName = x.User != null
+                    ? x.User.UserName ?? x.Email
+                    : x.Email
+            })
+            .Distinct()
+            .OrderBy(x => x.CustomerName)
+            .ToListAsync();
+
+        return new SelectList(customers, "UserId", "CustomerName", selected);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Moodora.Data;
 using Moodora.Models;
+using Moodora.ViewModels.MoodCategories;
 
 namespace Moodora.Repositories;
 
@@ -14,9 +15,39 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
             .Include(x => x.ProductMoodCategories.Where(productCategory => productCategory.Product != null && productCategory.Product.DeleteDate == null))
                 .ThenInclude(x => x.Product)
             .Where(x => x.DeleteDate == null)
-         
+
             .OrderBy(x => x.Name)
             .ToListAsync();
+    }
+
+
+    public Task<List<MoodCategory>> GetFilteredAsync(MoodCategoryQueryParameters query)
+    {
+        var categories = _context.MoodCategories
+            .Include(x => x.ProductMoodCategories.Where(productCategory => productCategory.Product != null && productCategory.Product.DeleteDate == null))
+                .ThenInclude(x => x.Product)
+            .Where(x => x.DeleteDate == null)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            categories = categories.Where(x => x.Name.Contains(query.Search) || (x.Description != null && x.Description.Contains(query.Search)));
+        }
+
+        if (query.IsActive.HasValue)
+        {
+            categories = categories.Where(x => x.IsActive == query.IsActive.Value);
+        }
+
+        categories = query.SortBy switch
+        {
+            "name_desc" => categories.OrderByDescending(x => x.Name),
+            "created_desc" => categories.OrderByDescending(x => x.CreatedAt),
+            "created_asc" => categories.OrderBy(x => x.CreatedAt),
+            _ => categories.OrderBy(x => x.Name)
+        };
+
+        return categories.ToListAsync();
     }
 
     public Task<MoodCategory?> GetByIdAsync(int id)
@@ -47,7 +78,8 @@ public class MoodCategoryRepository(ApplicationDbContext context) : IMoodCategor
             return;
         }
         entity.DeleteDate = DateTime.UtcNow;
-        _context.MoodCategories.Remove(entity);
+
+        entity.IsActive = false;
         await _context.SaveChangesAsync();
     }
 

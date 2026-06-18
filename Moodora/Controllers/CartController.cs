@@ -14,7 +14,12 @@ public class CartController(ApplicationDbContext context) : Controller
 
     public async Task<IActionResult> Index()
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
         var userId = GetCurrentUserId();
+        ViewBag.IsBlockedUser = await IsCurrentUserBlockedAsync(userId);
 
         var cartItems = await _context.Carts
             .Include(x => x.Product)
@@ -34,6 +39,17 @@ public class CartController(ApplicationDbContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(int productId, int quantity = 1, string? returnUrl = null)
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
+
+        if (await IsCurrentUserBlockedAsync())
+        {
+            TempData["CartError"] = "Your account is blocked from buying products. You can still browse products and mood categories.";
+            return RedirectToSafeReturnUrl(returnUrl, productId);
+        }
+
         if (quantity < 1)
         {
             TempData["CartError"] = "Please choose a quantity of at least 1.";
@@ -94,6 +110,11 @@ public class CartController(ApplicationDbContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(int id, int quantity)
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
+
         var userId = GetCurrentUserId();
         var cartItem = await _context.Carts
             .Include(x => x.Product)
@@ -137,6 +158,11 @@ public class CartController(ApplicationDbContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Remove(int id)
     {
+        if (User.IsInRole(ApplicationRoles.Admin))
+        {
+            return Forbid();
+        }
+
         var userId = GetCurrentUserId();
         var cartItem = await _context.Carts.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
 
@@ -150,6 +176,11 @@ public class CartController(ApplicationDbContext context) : Controller
         TempData["CartMessage"] = "Item removed from your cart.";
 
         return RedirectToAction(nameof(Index));
+    }
+    private async Task<bool> IsCurrentUserBlockedAsync(string? userId = null)
+    {
+        userId ??= GetCurrentUserId();
+        return await _context.Users.AnyAsync(x => x.Id == userId && x.IsBlocked);
     }
 
     private string GetCurrentUserId()

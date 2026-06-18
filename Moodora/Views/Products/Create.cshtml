@@ -32,7 +32,15 @@
     </div>
     <div class="col-md-6"><label asp-for="Price"></label><input asp-for="Price" class="form-control" /><span asp-validation-for="Price" class="text-danger"></span></div>
     <div class="col-md-6"><label asp-for="Stock"></label><input asp-for="Stock" class="form-control" /><span asp-validation-for="Stock" class="text-danger"></span></div>
-    <div class="col-md-12"><label asp-for="ImageUrl"></label><input asp-for="ImageUrl" class="form-control" /></div>
+    <div class="col-md-12">
+        <label asp-for="ImageUrl"></label>
+        <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/product.jpg" />
+        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        <div class="form-text">Paste a full image URL. If you paste a domain without https://, Moodora will add it automatically.</div>
+        <div class="image-preview mt-3">
+            <img id="imagePreview" src="@(string.IsNullOrWhiteSpace(Model.DisplayImageUrl) ? "https://placehold.co/800x600?text=Image+preview" : Model.DisplayImageUrl)" alt="Product image preview" />
+        </div>
+    </div>
     <div class="col-md-12"><label asp-for="Description"></label><textarea asp-for="Description" class="form-control"></textarea></div>
     <div class="col-md-12 form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label"></label></div>
     <div class="col-12"><button class="btn btn-primary">Create</button></div>
@@ -41,5 +49,28 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        (() => {
+            const input = document.getElementById("ImageUrl");
+            const preview = document.getElementById("imagePreview");
+            const fallback = "https://placehold.co/800x600?text=Image+preview";
+
+            const normalize = value => {
+                const trimmed = (value || "").trim();
+                if (!trimmed) return fallback;
+                if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) return trimmed;
+                return `https://${trimmed}`;
+            };
+
+            input?.addEventListener("input", () => {
+                preview.src = normalize(input.value);
+            });
+
+            preview?.addEventListener("error", () => {
+                preview.src = fallback;
+            });
+        })();
+    </script>
+
 
 }

@@ -12,8 +12,8 @@ using Moodora.Data;
 namespace Moodora.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260617180253_new-columns")]
-    partial class newcolumns
+    [Migration("20260618190912_Isblocked")]
+    partial class Isblocked
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -182,6 +182,11 @@ namespace Moodora.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");

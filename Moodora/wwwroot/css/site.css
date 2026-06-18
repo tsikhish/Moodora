@@ -55,13 +55,18 @@ body {
 }
 
 .navbar-nav {
-    gap: 1rem
+    gap: .7rem
+}
+
+.primary-nav {
+    min-width: 0;
 }
 
 .nav-link {
     color: #7b6c62 !important;
     font-weight: 700;
-    font-size: .88rem
+    font-size: .86rem;
+    white-space: nowrap
 }
 
     .nav-link:hover {
@@ -74,7 +79,10 @@ body {
     color: #fff !important;
     border-radius: 999px;
     font-weight: 800;
-    padding: .78rem 1.15rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .72rem 1rem;
     box-shadow: none
 }
 
@@ -83,6 +91,43 @@ body {
         border-color: #934517 !important;
         transform: translateY(-1px)
     }
+
+@media (max-width: 1199.98px) {
+    .moodora-container {
+        width: min(100% - 24px,1120px)
+    }
+
+    .navbar-nav {
+        gap: .45rem
+    }
+
+    .nav-link {
+        font-size: .8rem
+    }
+
+    .m-btn, .btn-primary, .btn-success {
+        padding: .65rem .85rem
+    }
+}
+
+@media (max-width: 991.98px) {
+    .moodora-nav {
+        height: auto;
+        min-height: 66px
+    }
+
+    #moodoraNav {
+        padding: 1rem 0
+    }
+
+    .navbar-nav {
+        gap: .25rem
+    }
+
+    .nav-link {
+        white-space: normal
+    }
+}
 
 .btn-outline-primary, .btn-outline-secondary {
     border: 1px solid var(--m-line) !important;
@@ -516,4 +561,28 @@ label, .form-label {
         font-size: 1.1rem;
         margin: 0 12px
     }
+}
+.mood-category-thumb {
+    display: block;
+}
+
+.payment-status-badge {
+    border-radius: 999px;
+    padding: .5rem .75rem;
+    font-weight: 700;
+}
+
+.payment-status-pending {
+    background: #fff3cd;
+    color: #7a4f01;
+}
+
+.payment-status-successful {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.payment-status-failed {
+    background: #f8d7da;
+    color: #842029;
 }

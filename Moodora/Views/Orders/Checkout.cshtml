@@ -79,7 +79,7 @@
                             var product = item.Product;
                             if (product is null) { continue; }
                             <div class="order-summary-item">
-                                <img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "https://placehold.co/96x96?text=Moodora" : product.ImageUrl)" alt="@product.Name" />
+                                <img src="@(string.IsNullOrWhiteSpace(product.DisplayImageUrl) ? "https://placehold.co/96x96?text=Moodora" : product.DisplayImageUrl)" alt="@product.Name" onerror="this.onerror=null;this.src='https://placehold.co/800x600?text=Moodora';" />
                                 <div class="flex-grow-1">
                                     <div class="fw-semibold">@product.Name</div>
                                     <div class="small text-muted">@item.Quantity × @product.Price.ToString("C")</div>

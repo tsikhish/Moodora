@@ -1,5 +1,6 @@
 ﻿using Moodora.Models;
 using Moodora.Repositories;
+using Moodora.ViewModels.MoodCategories;
 
 namespace Moodora.Services;
 
@@ -8,7 +9,14 @@ public class MoodCategoryService(IMoodCategoryRepository repository) : IMoodCate
     private readonly IMoodCategoryRepository _repository = repository;
 
     public Task<List<MoodCategory>> GetAllAsync() => _repository.GetAllAsync();
-
+    public async Task<MoodCategoryListViewModel> GetListAsync(MoodCategoryQueryParameters query)
+    {
+        return new MoodCategoryListViewModel
+        {
+            Query = query,
+            Categories = await _repository.GetFilteredAsync(query)
+        };
+    }
     public Task<MoodCategory?> GetByIdAsync(int id) => _repository.GetByIdAsync(id);
 
     public async Task CreateAsync(MoodCategory moodCategory)

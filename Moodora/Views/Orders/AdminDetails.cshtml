@@ -1,6 +1,8 @@
 ﻿@model Moodora.Models.Order
 @{
     ViewData["Title"] = $"Manage {Model.OrderNumber}";
+    var blockButtonClass = Model.User?.IsBlocked == true ? "btn-outline-success" : "btn-outline-danger";
+    var blockButtonText = Model.User?.IsBlocked == true ? "Unblock User" : "Block User";
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
@@ -33,5 +35,27 @@
         </form>
     </div>
 </div>
+<div class="card order-card shadow-sm mb-4">
+    <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <p class="text-uppercase text-muted fw-semibold mb-1">Customer access</p>
+            <h2 class="h5 mb-1">@(Model.User?.UserName ?? Model.FullName)</h2>
+            <p class="mb-0 text-muted">
+                @(Model.User?.IsBlocked == true
+                                ? "This customer is currently blocked from buying products."
+                                : "This customer can currently buy products.")
+            </p>
+        </div>
 
+        @if (Model.User is not null)
+        {
+            <form asp-action="ToggleUserBlock" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn @blockButtonClass">
+                    @blockButtonText
+                </button>
+            </form>
+        }
+    </div>
+</div>
 @await Html.PartialAsync("_OrderDetailsCard", Model)

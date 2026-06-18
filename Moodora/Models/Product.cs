@@ -18,6 +18,7 @@ public class Product
     public decimal Price { get; set; }
 
     [StringLength(1000)]
+    [Display(Name = "Image URL")]
     public string? ImageUrl { get; set; }
 
     [Range(0, int.MaxValue)]
@@ -33,5 +34,26 @@ public class Product
     [Display(Name = "Mood Categories")]
     public List<int> SelectedMoodCategoryIds { get; set; } = new();
 
+    [NotMapped]
+    public string? DisplayImageUrl => NormalizeImageUrl(ImageUrl);
+
     public ICollection<ProductMoodCategory> ProductMoodCategories { get; set; } = new List<ProductMoodCategory>();
+
+    private static string? NormalizeImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return null;
+        }
+
+        var trimmed = imageUrl.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("/", StringComparison.Ordinal))
+        {
+            return trimmed;
+        }
+
+        return $"https://{trimmed}";
+    }
 }

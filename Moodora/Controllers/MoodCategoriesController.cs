@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moodora.Models;
 using Moodora.Services;
+using Moodora.ViewModels.MoodCategories;
 
 namespace Moodora.Controllers;
 
@@ -10,10 +11,10 @@ public class MoodCategoriesController(IMoodCategoryService service) : Controller
 {
     private readonly IMoodCategoryService _service = service;
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index([FromQuery] MoodCategoryQueryParameters query)
     {
-        var categories = await _service.GetAllAsync();
-        return View(categories);
+        var viewModel = await _service.GetListAsync(query);
+        return View(viewModel);
     }
 
     public async Task<IActionResult> Details(int? id)

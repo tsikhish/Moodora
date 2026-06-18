@@ -18,6 +18,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(x => x.IsBlocked).HasDefaultValue(false);
+        });
         builder.Entity<MoodCategory>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(100).IsRequired();

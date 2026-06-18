@@ -12,11 +12,10 @@
 
 <section class="detail-grid">
 
-    <img class="product-detail-image"
-         src="@(string.IsNullOrWhiteSpace(Model.ImageUrl)
-                         ? "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1000&q=80"
-                         : Model.ImageUrl)"
-         alt="@Model.Name" />
+    src="@(string.IsNullOrWhiteSpace(Model.DisplayImageUrl)
+        ? "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1000&q=80"
+        : Model.DisplayImageUrl)"
+    alt="@Model.Name" onerror="this.onerror=null;this.src='https://placehold.co/1000x750?text=Moodora';" />
 
     <div class="m-card detail-panel">
 
@@ -73,10 +72,10 @@
                 <div class="col">
                     <div class="card h-100">
                         <img class="card-img-top"
-                             src="@(string.IsNullOrWhiteSpace(product!.ImageUrl)
-                                             ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80"
-                                             : product.ImageUrl)"
-                             alt="@product.Name" />
+                             src="@(string.IsNullOrWhiteSpace(product!.DisplayImageUrl)
+                                                                          ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80"
+                                                                          : product.DisplayImageUrl)"
+                     alt="@product.Name" onerror="this.onerror=null;this.src='https://placehold.co/800x600?text=Moodora';" />
 
                         <div class="card-body d-flex flex-column gap-2">
                             <h5 class="card-title mb-0">@product.Name</h5>
@@ -92,24 +91,32 @@
                                     Details
                                 </a>
 
-                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-1 align-items-center">
-                                    <input type="hidden" name="productId" value="@product.Id" />
-                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-                                    <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@product.Stock" name="quantity" value="1" aria-label="Quantity for @product.Name" />
-                                    <button type="submit" class="btn btn-primary btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Add</button>
-                                </form>
+                        @if (User.IsInRole(ApplicationRoles.Admin))
+                                {
+                                    <a class="btn btn-outline-secondary btn-sm" asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id">Edit</a>
+                                    <a class="btn btn-outline-danger btn-sm" asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id">Delete</a>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-1 align-items-center">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                        <input class="form-control form-control-sm" style="width: 75px;" type="number" min="1" max="@product.Stock" name="quantity" value="1" aria-label="Quantity for @product.Name" />
+                                        <button type="submit" class="btn btn-primary btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Add</button>
+                                    </form>
 
-                                <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
-                                    <input type="hidden" name="productId" value="@product.Id" />
-                                    <input type="hidden" name="quantity" value="1" />
-                                    <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
-                                    <button type="submit" class="btn btn-success btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Buy</button>
-                                </form>
+                                    <form asp-controller="Cart" asp-action="Add" method="post" class="d-inline">
+                                        <input type="hidden" name="productId" value="@product.Id" />
+                                        <input type="hidden" name="quantity" value="1" />
+                                        <input type="hidden" name="returnUrl" value='@Url.Action("Checkout", "Orders")' />
+                                        <button type="submit" class="btn btn-success btn-sm" @(product.Stock <= 0 ? "disabled" : null)>Buy</button>
+                                    </form>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
-            }
+                }
         </div>
     }
 
